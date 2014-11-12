@@ -3,7 +3,7 @@ layout: post
 title: "Что такое Data Science?"
 date: 2014-11-07 14:08:41 +0300
 comments: true
-categories: [data science, machine learning, statistics, programming]
+categories: [Машинное обучение, Статистика, Программирование, Визуализация]
 author: andrewbo29
 ---
 

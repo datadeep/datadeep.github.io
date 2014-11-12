@@ -12,7 +12,7 @@
     <div id="vk_like"></div>
     <script type="text/javascript">
     window.onload = function () {
-        VK.init({apiId: 4631132, onlyWidgets: true});
+        VK.init({apiId: 1234567, onlyWidgets: true});
         VK.Widgets.Like("vk_like", {type: "mini"});
     }
     </script>
