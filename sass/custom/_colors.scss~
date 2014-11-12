@@ -5,8 +5,8 @@
 $header-bg: #303030;
 $subtitle-color: #0f9fff;
 $nav-bg: #2b2b2b;
-$nav-bg-front: #303030;
-$nav-bg-back: #303030;
+$nav-bg-front: #2b2b2b;
+$nav-bg-back: #2b2b2b;
 //$sidebar-bg: desaturate(#eceff5, 8);
 //$sidebar-link-color: saturate(#526f9a, 10);
 //$sidebar-link-color-hover: darken(#7ab662, 9);
