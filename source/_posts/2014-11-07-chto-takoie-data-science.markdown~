@@ -3,8 +3,10 @@ layout: post
 title: "Что такое Data Science?"
 date: 2014-11-07 14:08:41 +0300
 comments: true
-categories: [data science, machine learning, statistics, programming]
+categories: [Машинное обучение, Статистика, Программирование, Визуализация]
 author: andrewbo29
+description:
+keywords:
 ---
 
 Блог datadeep.ru будет посвящён *Data Science* (*Науке о данных*, по-русски её также иногда называют *Даталогия*). Поэтому первый пост в блоге мне представляется логичным посвятить описанию науки о данных в представлении авторов блога, чтобы читатель мог составить для себя мнение о том, что его ждёт в дальнейшем.

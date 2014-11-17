@@ -7,7 +7,8 @@ title: DataDeep
 subtitle: Sapere aude
 author: Команда datadeep.ru
 simple_search: https://www.google.com/search
-description:
+description: Блог, посвящённый науке о данных (Data Science) и машинному обучению (Machine Learning)
+keywords: Data Science, Machine Learning, Data Mining, Optimization, Visualization, Наука о данных, Машинное обучение, Оптимизация, Визуализация
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
@@ -105,3 +106,6 @@ google_analytics_tracking_id: UA-56118002-1
 
 # Facebook Like
 facebook_like: true
+
+#Vk Like
+vk_like: true
