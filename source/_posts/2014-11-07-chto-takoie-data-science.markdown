@@ -4,7 +4,7 @@ title: "Что такое Data Science?"
 date: 2014-11-07 14:08:41 +0300
 comments: true
 categories: [Машинное обучение, Статистика, Программирование, Визуализация]
-author: andrewbo29
+author: Andrei Boiarov
 description: Обзор науки о данных (Data Science)
 keywords: data science, review, machine learning, data mining
 ---
