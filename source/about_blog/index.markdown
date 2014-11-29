@@ -10,7 +10,7 @@ footer: false
 
 Надеемся, что блог будет любопытен как людям, имеющим опыт в области анализа данных, так и тем, для кого наука о данных явялется хобби. Для обратной связи пишите на datadeepru@gmail.com.
 
-Команда блога: Андрей (andrewbo29), Александр (Obus), Александр (aleani).
+Команда блога: Andrei Boiarov, Alexander Senov, Alexander Anisimov.
 
 Ambitious but rubbish &copy; Top Gear
 
