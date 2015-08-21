@@ -1,1 +1,396 @@
-My Octopress Page is coming soon &hellip;
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>DataDeep</title>
+  <meta name="author" content="Команда datadeep.ru">
+
+  
+  <meta name="description" content="Блог, посвящённый науке о данных (Data Science), машинному обучению (Machine Learning) и визуализации (Visualization)">
+  <meta name="keywords" content="Data Science, Machine Learning, Data Mining, Optimization, Visualization, Наука о данных, Машинное обучение, Оптимизация, Визуализация">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://datadeep.ru">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="DataDeep" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-56118002-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">DataDeep</a></h1>
+  
+    <h2>Sapere aude</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation">
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:datadeep.ru" />
+    <input class="search" type="text" name="q" results="0" placeholder="Поиск"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Блог</a></li>
+  <li><a href="/blog/archives">Архив блога</a></li>
+  <li><a href="/about_blog">О блоге</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Обнаружение дорожных знаков с помощью Deep Learning</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-08-21T20:51:56+03:00'><span class='date'>21/08/2015</span> <span class='time'>20:51</span></time>
+        
+           | <a href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/#disqus_thread"
+             data-disqus-identifier="http://datadeep.ru/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Комментарии</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<link href="/d3/bootstrap_tooltip_popover.css" rel="stylesheet" />
+
+<p>Команда блога DataDeep не смогла остаться в стороне от <a href="https://meduza.io/news/2015/07/17/samoupravlyaemaya-mashina-google-popala-v-pervoe-dtp-s-postradavshimi">новости об аварии самоуправляемого автомобиля Google</a>, и поэтому я решил написать пост о своём опыте разработки системы для обнаружения дорожных знаков, основанной на машинном обучении. Такую систему вполне можно отнести к компонентам, которые используются как для разработки механизмов автономного упраления автомобилем, так и в современных системах помощи водителю :)</p>
+
+<p><img src="/images/selfdrivingcar.jpg" width="768" height="576" title="Self-driving car" /></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Читать дальше &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Краткое введение в D3.js</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-04T20:44:23+03:00'><span class='date'>04/12/2014</span> <span class='time'>20:44</span></time>
+        
+           | <a href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/#disqus_thread"
+             data-disqus-identifier="http://datadeep.ru/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Комментарии</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><script src="http://d3js.org/d3.v2.js"></script>
+
+<div>
+  <style type="text/css">
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    ul{margin:1em 0 1em 2em;}
+    ol{margin:1em 0 1em 2em;}
+    
+    .container0 .container5{
+    	  font-size: x-small;
+    }
+    
+
+
+  </style>
+</div>
+
+<p>В этой статье мы познакомимся с мощным инструментом визуализации данных – библиотекой D3.js.
+Она позволяет представлять ваши данные в различных формах и  добавлять эффектные графики на веб-страницы.</p>
+
+<p><img src="/images/d3.png" width="768" height="316" title="D3.js examples" /></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Читать дальше &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/">Оптимизация в машинном обучении</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-20T23:00:01+03:00'><span class='date'>20/11/2014</span> <span class='time'>23:00</span></time>
+        
+           | <a href="/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/#disqus_thread"
+             data-disqus-identifier="http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/">Комментарии</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/optim_surface.png" width="768" height="576" title="Surface" />
+<script type="math/tex">\newcommand{loss}{\ell}
+\newcommand{risk}{F}
+\newcommand{hyp}{h}
+\newcommand{eps}{\varepsilon}</script></p>
+
+<p>Привет, читатель! Обсуждая науку о данных, нельзя не упомянуть машинное обучение, а говоря о машинном обучении, никак невозможно пройти мимо такой темы как <em>оптимизация</em>. Что же такое оптимизация и какая она бывает? Как оптимизация связана с машинным обучением? Как быть быстрее, оптимальнее, точнее?</p>
+
+<p>Если эти вопросы вызывают интерес — заходите.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/">Читать дальше &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/07/chto-takoie-data-science/">Что такое Data Science?</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-07T14:08:41+03:00'><span class='date'>07/11/2014</span> <span class='time'>14:08</span></time>
+        
+           | <a href="/blog/2014/11/07/chto-takoie-data-science/#disqus_thread"
+             data-disqus-identifier="http://datadeep.ru/blog/2014/11/07/chto-takoie-data-science/">Комментарии</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Блог datadeep.ru будет посвящён <em>Data Science</em> (<em>Науке о данных</em>, по-русски её также иногда называют <em>Даталогия</em>). Поэтому первый пост в блоге мне представляется логичным посвятить описанию науки о данных в представлении авторов блога, чтобы читатель мог составить для себя мнение о том, что его ждёт в дальнейшем.</p>
+
+<p><img src="/images/data_science.jpg" width="768" height="576" title="Data Science" /></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/11/07/chto-takoie-data-science/">Читать дальше &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Архив блога</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Недавние Посты</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Обнаружение дорожных знаков с помощью Deep Learning</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Краткое введение в D3.js</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/">Оптимизация в машинном обучении</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/07/chto-takoie-data-science/">Что такое Data Science?</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+<section>
+  <h1>Категории</h1>
+    <ul id="category-list"><li><a href='/blog/categories/deep-learning'>deep learning (1)</a></li><li><a href='/blog/categories/vizualizatsiia'>Визуализация (2)</a></li><li><a href='/blog/categories/komp-iutiernoie-zrieniie'>Компьютерное зрение (1)</a></li><li><a href='/blog/categories/mashinnoie-obuchieniie'>Машинное обучение (3)</a></li><li><a href='/blog/categories/optimizatsiia'>Оптимизация (1)</a></li><li><a href='/blog/categories/proghrammirovaniie'>Программирование (1)</a></li><li><a href='/blog/categories/statistika'>Статистика (1)</a></li></ul>
+</section>
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Команда datadeep.ru -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'datadeep';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+  <script type="text/javascript" src="//vk.com/js/api/openapi.js?75"></script>
+
+
+
+
+</body>
+</html>
+
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+

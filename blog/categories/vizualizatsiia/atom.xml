@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Категория: Визуализация | DataDeep]]></title>
+  <link href="http://datadeep.ru/blog/categories/vizualizatsiia/atom.xml" rel="self"/>
+  <link href="http://datadeep.ru/"/>
+  <updated>2015-08-21T20:56:45+03:00</updated>
+  <id>http://datadeep.ru/</id>
+  <author>
+    <name><![CDATA[Команда datadeep.ru]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Краткое введение в D3.js]]></title>
+    <link href="http://datadeep.ru/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/"/>
+    <updated>2014-12-04T20:44:23+03:00</updated>
+    <id>http://datadeep.ru/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js</id>
+    <content type="html"><![CDATA[<script src="http://d3js.org/d3.v2.js"></script>
+
+<div>
+  <style type="text/css">
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    ul{margin:1em 0 1em 2em;}
+    ol{margin:1em 0 1em 2em;}
+    
+    .container0 .container5{
+    	  font-size: x-small;
+    }
+    
+
+
+  </style>
+</div>
+
+<p>В этой статье мы познакомимся с мощным инструментом визуализации данных – библиотекой D3.js.
+Она позволяет представлять ваши данные в различных формах и  добавлять эффектные графики на веб-страницы.</p>
+
+<p><img src="/images/d3.png" width="768" height="316" title="D3.js examples" ></p>
+
+<!-- more -->
+
+<p>Существует много различных инструментов визуализации, некоторые из них имеют долгую историю и плотно прижились среди специалистов. Например, с помощью библиотеки ggplot2 для языка R можно строить достаточно сложные графики всего несколькими строчками кода, а ученые, использующие язык Python, создают графики при помощи библиотеки matplotlib.</p>
+
+<p>Но увеличение количества информации, развитие Интернета и рост графических возможностей современных программ создают новые ожидания от визуального представления данных:</p>
+
+<ul>
+  <li><strong>Интерактивность.</strong> Интерактивный график может демонстрировать изменения в зависимости от настройки параметров, сравнивать показатели для определенной пользователем выборки или вовсе показывать изменения данных в реальном времени. Такая визуализация не только предъявляет результат, но и позволяет зрителю анализировать данные самостоятельно;</li>
+  <li><strong>Возможность публикации в Интернете.</strong> Визуализация служит не только для анализа данных, это еще и лучший способ поделиться своими выводами с миром. Выложить в сеть статичную картинку нетрудно, но интерактивная визуализация должна быть доступна без установки дополнительных приложений, то есть исполняться прямо в браузере;</li>
+  <li><strong>Доступность данных.</strong> В случае со статичной картинкой, вы не можете получить доступ к исходным данным, чтобы что-то уточнить или проверить. Визуализация, создаваемая в вашем браузере на основе массива данных, не лишает вас такой возможности;</li>
+  <li><strong>Информационная эстетика.</strong> Речь здесь идет не о красоте, а об удобстве восприятия. Настройки по умолчанию для шрифтов и цветовых схем в некоторых системах зачастую не самые удачные, а изменить их не всегда легко. К тому же многие старые системы генерируют только растровые изображения, которые невозможно увеличить без потери качества. Выход: использовать векторную графику и графические возможности современных браузеров.</li>
+</ul>
+
+<p>В связи с этими ожиданиями создаются новые инструменты или улучшаются старые. Например, библиотека Bokeh для языка Python использует для визуализации элемент canvas, созданный как контейнер для графики в HTML5, а инструмент Plotly  позволяет экспортировать результаты работы ggplot2, matplotlib и MATLAB в интерактивные веб-графики.</p>
+
+<p>Но стандартом интерактивных веб-визуализаций можно смело назвать JavaScript библиотеку D3.js Майка Бостока. Библиотека создана в 2011 году, родившись из проекта Protovis. Основной принцип работы D3 заключается в создании элементов  веб-страницы на основе загруженных данных. Для этого используются современные стандарты HTML, SVG (векторная графика), CSS. Основные форматы данных - CSV и JSON.  D3 расшифровывается как Data Driven Documents, что вполне описывает философию библиотеки.</p>
+
+<p>Основные преимущества D3:</p>
+
+<ul>
+  <li><strong>Прозрачность связи данных и представления.</strong> Визуальные элементы, создаваемые с помощью библиотеки, напрямую связаны с вашими данными. Данные хранятся в атрибутах графических элементов;</li>
+  <li><strong>Гибкость в выборе представления.</strong> В D3 нет заготовок для различного вида графиков (для хорошей визуализации надо написать не один десяток строк кода), но она позволяет создавать графические элементы и изменять их параметры в соответствии с задачей. Именно поэтому она так хороша для создания нестандартных визуализаций;</li>
+  <li><strong>Интерактивность.</strong> D3 позволяет без особых сложностей превратить график в интерактивный интерфейс, который показывает только актуальную для пользователя информацию.</li>
+</ul>
+
+<p>Очень много крутых примеров можно найти на <a href="http://bost.ocks.org/mike/">сайте</a> создателя библиотеки Майка Бостока.</p>
+
+<h2 id="section">Практический пример</h2>
+
+<p>Попробуем создать несложный график и познакомиться с принципами работы D3.</p>
+
+<p>Перед началом работы для удобства отладки необходимо <a href="https://github.com/mbostock/d3/">скачать</a> библиотеку и сохранить ее в директорию проекта. Структура папок при этом будет выглядеть так:</p>
+
+<p><code>
+project-folder/
+               d3/
+                  d3.js
+                  d3.min.js (optional)
+               index.html
+</code></p>
+
+<p>Папка с библиотекой может иметь и другое имя, например содержать номер актуальной версии. Слово min означает ограниченный функционал для разработчика, но и ее вполне хватит для начала работы.</p>
+
+<p>Я не буду останавливаться на описании основ веб-технологии, которые вы можете изучить самостоятельно. Для начала достаточно понимать, как работает HTML-документ, для чего нужны стили CSS и  как устроена SVG графика. Весь приведенный в последующих примерах код должен работать в таком шаблоне (в поле src должен быть указан путь к той версии библиотеки, которую вы скачали, или же ссылка на актуальную версию в Интернете “http://d3js.org/d3.v3.min.js”):</p>
+
+<p>&#8220;` html
+&lt;!DOCTYPE html&gt;</p>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>D3 Page</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+    </head>
+    <body>
+    <div id="container"></div>
+        <script type="text/javascript">
+            // Your D3 code will go here
+        </script>
+    </body>
+</html>
+<p>&#8220;`</p>
+
+<p>Начнем изучение с простейшего примера – построим вот такую диаграмму рассеяния (<em>scatterplot</em>) для небольшого массива данных:</p>
+
+<div id="container0" align="center"></div>
+
+<script type="text/javascript">
+        
+        var w = 400;
+        var h = 200;
+        var padding = 40;
+
+        
+        var svg = d3.select("#container0")
+             	      .append("svg")
+          			  .attr("width", w)
+          			  .attr("height", h);
+        
+        var dataset = [
+                [50, 20], [480, 90], [250, 50], [100, 133], [330, 95],
+                [410, 12], [475, 44], [25, 167], [185, 21], [120, 88],[600, 150]
+              ];
+
+        
+        var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([padding, w-padding]); 
+                     
+        var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([h - padding, padding]);
+                     
+        var rScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([2, 5]);  
+                     
+                                
+        var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom")
+                  .ticks(5);
+                  
+         var yAxis = d3.svg.axis()
+                  .scale(yScale)
+                  .orient("left")
+                  .ticks(5);                    
+                     
+                     
+         svg.selectAll("circle")
+			   .data(dataset)
+			   .enter()
+			   .append("circle")
+			   .attr("cx", function(d) {return xScale(d[0]);})
+			   .attr("cy", function(d) {return yScale(d[1]);})
+			   .attr("r", function(d) { return rScale(d[1]);})
+			   .attr("fill",function(d){if (d[0]>100) {return "teal"} else {return "orange"}});
+
+		
+			svg.append("g")
+			    .attr("class", "axis")
+			    .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis);  
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis);                                 
+        
+</script>
+
+<p>Но для начала нарисуем круг. Для этого нам надо выполнить несколько простых шагов:</p>
+
+<ol>
+  <li>Выделить элемент страницы, на который мы хотим добавить графику. В нашем случае мы выделяем элемент, у которого id = “container”;</li>
+  <li>Добавить элемент svg и обозначить его параметры: ширину и высоту;</li>
+  <li>Добавить в SVG контейнер наш кружок;</li>
+  <li>Задать параметры кружка: координаты центра, радиус и цвет.</li>
+</ol>
+
+<p><code>javascript
+var svg = d3.select("#container")       //1
+            .append("svg")              //2
+            .attr("width",100)
+            .attr("height",100);          			   
+svg.append("circle")                    //3
+   .attr("cx", 50)                      //4
+   .attr("cy", 50)
+   .attr("r", 30)
+   .attr("fill","orange");
+</code></p>
+
+<p>Вот что у нас должно получится:</p>
+
+<div id="container1"></div>
+<script>
+
+
+             var svg = d3.select("#container1")
+             	      .append("svg")
+          			  .attr("width",100)
+          			  .attr("height",100);
+          			  
+          	svg.append("circle")
+			   .attr("cx", 50)
+			   .attr("cy", 50)
+			   .attr("r", 30)
+			   .attr("fill","orange");		  
+	    
+</script>
+
+<p>Свойства нашего нового объекта мы можем менять не только при создании, но и при дальнейшей работе. Для этого есть два способа:</p>
+
+<ul>
+  <li>создать js-переменную и обращаться к ней;</li>
+  <li>обращаться к элементам с помощью функции выделения select или selectAll.</li>
+</ul>
+
+<p>В примере ниже мы меняем радиус круга с помощью первого способа (1), а цвет – с помощью второго (2):</p>
+
+<p><code>javascript
+var svg = d3.select("#container")
+            .append("svg")
+            .attr("width",100)
+            .attr("height",100);                        
+var circle = svg.append("circle")
+            .attr("cx", 50)
+            .attr("cy", 50)
+            .attr("r", 30);
+circle.attr("r",50);                    //1
+svg.select("circle")                    //2
+   .attr("fill","teal");	
+</code></p>
+
+<div id="container2"></div>
+<script>
+
+
+             var svg = d3.select("#container2")
+             	      .append("svg")
+          			  .attr("width",100)
+          			  .attr("height",100);
+          			  
+          	var circle=svg.append("circle")
+			   .attr("cx", 50)
+			   .attr("cy", 50)
+			   .attr("r", 30);
+			   
+			circle.attr("r",50);
+			
+			svg.selectAll("circle").
+			attr("fill","teal");	
+			
+				  
+	    
+</script>
+
+<p>Все это прекрасно, но <strong>где же данные?</strong></p>
+
+<p>Теперь используем массив данных для создания нескольких кругов.
+Для этого применяется не вполне очевидная конструкция:</p>
+
+<ol>
+  <li>мы задаем данные, которые будем визуализировать</li>
+  <li>выделяем несуществующие элементы: selectAll(“circle”);</li>
+  <li>связываем их с нашим массивом данных: data(dataset);</li>
+  <li>создаем элементы: enter();</li>
+  <li>добавляем на страницу окружности, используя данные.</li>
+</ol>
+
+<p>Механизм добавления окружностей тот же, что и примере выше. Отличие лишь в том, что окружность теперь создается для каждого элемента массива dataset. Атрибуты окружности (положение её центра) в данном случае определяются конкретными данными.</p>
+
+<p><code>javascript
+var svg = d3.select("#container")
+            .append("svg")
+            .attr("width",200)
+            .attr("height",200);          			 
+var dataset = [
+            [50, 20], [480, 90], [250, 50], [100, 133], [330, 95],
+            [410, 12], [475, 44], [25, 167], [185, 21], [120, 88],[600, 150]
+              ];                                            //1	
+var circle = svg.selectAll("circle")                        //2
+              .data(dataset)                                //3
+              .enter()                                      //4
+              .append("circle")                             //5
+              .attr("cx",function(d){return d[0]})
+              .attr("cy",function(d){return d[1]})
+              .attr("r", 10);
+circle.attr("fill","teal");
+</code></p>
+
+<div id="container3"></div>
+<script>
+             var svg = d3.select("#container3")
+             	      .append("svg")
+          			  .attr("width",200)
+          			  .attr("height",200);
+          			 
+        var dataset = [
+                [50, 20], [480, 90], [250, 50], [100, 133], [330, 95],
+                [410, 12], [475, 44], [25, 167], [185, 21], [120, 88],[600, 150]
+              ];		  
+          	var circle=svg.selectAll("circle")
+          	.data(dataset)
+          	.enter()
+          	   .append("circle")
+			   .attr("cx",function(d){return d[0]})
+			   .attr("cy",function(d){return d[1]})
+			   .attr("r", 10);
+			   
+			circle.attr("fill","teal");
+</script>
+
+<p>Мы нарисовали много кружков, но у нас появилось пара проблем.</p>
+
+<p>Во-первых кружков на рисунке явно меньше, чем элементов в нашем массиве. Это произошло из-за того, что размер нашего svg-элемента всего 200x200 пикселей, а значения в массиве dataset выходят за эти границы.</p>
+
+<p>Во-вторых координатная система в svg устроена так, что ось Y направлена сверху вниз, что нас не устраивает, так как не очень удобно для восприятия.</p>
+
+<p>Обе эти проблемы решаются с помощью функции масштабирования: scale. Это отображение, переводящее число из одного интервала в число из другого интервала. Областью значений чаще всего является разрешение картинки в пикселях. На рисунке ниже показан пример работы масштабирования для числовой и временной осей (рисунок взят из <a href="http://www.d3noob.org/2012/12/setting-scales-domains-and-ranges-in.html">cтатьи</a> с более подробным пояснением).</p>
+
+<p><img src="/images/scale1.png" title="Scale" ></p>
+
+<p>В примере ниже мы используем два таких отображения (для осей X и Y), задавая области определения (domain), области значений (range) и характер функции (linear).</p>
+
+<p><code>javascript
+var w = 400;
+var h = 200;
+var padding = 30; 
+var dataset = [
+            [50, 20], [480, 90], [250, 50], [100, 133], [330, 95],
+            [410, 12], [475, 44], [25, 167], [185, 21], [120, 88],[600, 150]
+              ];
+var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([padding, w-padding*2]); 
+var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([h - padding, padding]);
+var svg = d3.select("#container")
+            .append("svg")
+            .attr("width",w)
+            .attr("height",h);
+var circle = svg.selectAll("circle")
+                .data(dataset)
+                .enter()
+                .append("circle")
+                .attr("cx",function(d){return xScale(d[0])})
+                .attr("cy",function(d){return yScale(d[1])})
+                .attr("r", 5)
+                .attr("fill","teal");
+</code></p>
+
+<div id="container4"></div>
+<script>
+       var w = 400;
+        var h = 200;
+        var padding = 30;
+        
+        
+        var dataset = [
+                [50, 20], [480, 90], [250, 50], [100, 133], [330, 95],
+                [410, 12], [475, 44], [25, 167], [185, 21], [120, 88],[600, 150]
+              ];
+                
+       var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([padding, w-padding*2]); 
+                     
+        var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([h - padding, padding]);
+
+             var svg = d3.select("#container4")
+             	      .append("svg")
+          			  .attr("width",w)
+          			  .attr("height",h);
+          			 
+	
+              	  
+          	var circle=svg.selectAll("circle")
+          	.data(dataset)
+          	.enter()
+          	   .append("circle")
+			   .attr("cx",function(d){return xScale(d[0])})
+			   .attr("cy",function(d){return yScale(d[1])})
+			   .attr("r", 5)
+			   .attr("fill","teal");
+</script>
+
+<p>Теперь все точки на месте и будут отображаться корректно, даже если мы решим изменить размер контейнера.</p>
+
+<p>Осталось совсем немного: нарисуем оси с помощью функции d3.svg.axis(), добавим еще один масштаб для радиусов окружности и поиграемся с цветом. Чтобы оси были тонкие и красивые, добавим немного CSS. Итоговый код страницы будет выглядеть как-то так:</p>
+
+<p><figure class='code'><figcaption><span> (intro_d3_js.html)</span> <a href='/downloads/code/intro_d3_js.html'>download</a></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
+</span><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;head&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;title&gt;</span>D3 Page<span class="nt">&lt;/title&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;d3/d3.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="nt">&lt;style </span><span class="na">type=</span><span class="s">&quot;text/css&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                     <span class="nc">.axis</span> <span class="nt">path</span><span class="o">,</span>
+</span><span class='line'>                     <span class="nc">.axis</span> <span class="nt">line</span> <span class="p">{</span>
+</span><span class='line'>                                  <span class="n">fill</span><span class="o">:</span> <span class="k">none</span><span class="p">;</span>
+</span><span class='line'>                                  <span class="n">stroke</span><span class="o">:</span> <span class="nb">black</span><span class="p">;</span>
+</span><span class='line'>                                  <span class="n">shape</span><span class="o">-</span><span class="n">rendering</span><span class="o">:</span> <span class="n">crispEdges</span><span class="p">;</span>
+</span><span class='line'>                                <span class="p">}</span>
+</span><span class='line'>        <span class="nt">&lt;/style&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/head&gt;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nt">&lt;body&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">w</span> <span class="o">=</span> <span class="mi">400</span><span class="p">;</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">h</span> <span class="o">=</span> <span class="mi">200</span><span class="p">;</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">padding</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">svg</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s2">&quot;#container&quot;</span><span class="p">)</span>
+</span><span class='line'>             <span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;svg&quot;</span><span class="p">)</span>
+</span><span class='line'>          	 <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="nx">w</span><span class="p">)</span>
+</span><span class='line'>          	 <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="nx">h</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">dataset</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>            <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">480</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span> <span class="p">[</span><span class="mi">250</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">133</span><span class="p">],</span> <span class="p">[</span><span class="mi">330</span><span class="p">,</span> <span class="mi">95</span><span class="p">],</span>
+</span><span class='line'>            <span class="p">[</span><span class="mi">410</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="p">[</span><span class="mi">475</span><span class="p">,</span> <span class="mi">44</span><span class="p">],</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">167</span><span class="p">],</span> <span class="p">[</span><span class="mi">185</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="p">[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">88</span><span class="p">],[</span><span class="mi">600</span><span class="p">,</span> <span class="mi">150</span><span class="p">]</span>
+</span><span class='line'>              <span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">xScale</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">scale</span><span class="p">.</span><span class="nx">linear</span><span class="p">()</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">domain</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">dataset</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">d</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="p">})])</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">range</span><span class="p">([</span><span class="nx">padding</span><span class="p">,</span> <span class="nx">w</span><span class="o">-</span><span class="nx">padding</span><span class="o">*</span><span class="mi">2</span><span class="p">]);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">yScale</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">scale</span><span class="p">.</span><span class="nx">linear</span><span class="p">()</span>
+</span><span class='line'>                <span class="p">.</span><span class="nx">domain</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">dataset</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">d</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span> <span class="p">})])</span>
+</span><span class='line'>                 <span class="p">.</span><span class="nx">range</span><span class="p">([</span><span class="nx">h</span> <span class="o">-</span> <span class="nx">padding</span><span class="p">,</span> <span class="nx">padding</span><span class="p">]);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">rScale</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">scale</span><span class="p">.</span><span class="nx">linear</span><span class="p">()</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">domain</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">dataset</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">d</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span> <span class="p">})])</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">range</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">xAxis</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">svg</span><span class="p">.</span><span class="nx">axis</span><span class="p">()</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">scale</span><span class="p">(</span><span class="nx">xScale</span><span class="p">)</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">orient</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span>
+</span><span class='line'>               <span class="p">.</span><span class="nx">ticks</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">yAxis</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">svg</span><span class="p">.</span><span class="nx">axis</span><span class="p">()</span>
+</span><span class='line'>              <span class="p">.</span><span class="nx">scale</span><span class="p">(</span><span class="nx">yScale</span><span class="p">)</span>
+</span><span class='line'>              <span class="p">.</span><span class="nx">orient</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="p">.</span><span class="nx">ticks</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nx">svg</span><span class="p">.</span><span class="nx">selectAll</span><span class="p">(</span><span class="s2">&quot;circle&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="nx">dataset</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">enter</span><span class="p">()</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;circle&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;cx&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span><span class="k">return</span> <span class="nx">xScale</span><span class="p">(</span><span class="nx">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]);})</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;cy&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span><span class="k">return</span> <span class="nx">yScale</span><span class="p">(</span><span class="nx">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]);})</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">rScale</span><span class="p">(</span><span class="nx">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]);})</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;fill&quot;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">){</span><span class="k">if</span> <span class="p">(</span><span class="nx">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span> <span class="p">{</span><span class="k">return</span> <span class="s2">&quot;teal&quot;</span><span class="p">}</span> <span class="k">else</span> <span class="p">{</span><span class="k">return</span> <span class="s2">&quot;orange&quot;</span><span class="p">}});</span>
+</span><span class='line'>
+</span><span class='line'>		
+</span><span class='line'><span class="nx">svg</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="s2">&quot;axis&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="s2">&quot;translate(0,&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="nx">h</span> <span class="o">-</span> <span class="nx">padding</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">xAxis</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">svg</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="s2">&quot;axis&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="s2">&quot;translate(&quot;</span> <span class="o">+</span> <span class="nx">padding</span> <span class="o">+</span> <span class="s2">&quot;,0)&quot;</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">yAxis</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;/body&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>А вот и результат наших трудов:</p>
+
+<div id="container5">
+<style>
+
+</style>
+</div>
+<script type="text/javascript">
+        
+        var w = 400;
+        var h = 200;
+        var padding = 40;
+
+        
+        var svg = d3.select("#container5")
+             	      .append("svg")
+          			  .attr("width", w)
+          			  .attr("height", h);
+        
+        var dataset = [
+                [50, 20], [480, 90], [250, 50], [100, 133], [330, 95],
+                [410, 12], [475, 44], [25, 167], [185, 21], [120, 88],[600, 150]
+              ];
+
+        
+        var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([padding, w-padding]); 
+                     
+        var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([h - padding, padding]);
+                     
+        var rScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([2, 5]);  
+                     
+                                
+        var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom")
+                  .ticks(5);
+                  
+         var yAxis = d3.svg.axis()
+                  .scale(yScale)
+                  .orient("left")
+                  .ticks(5);                    
+                     
+                     
+         svg.selectAll("circle")
+			   .data(dataset)
+			   .enter()
+			   .append("circle")
+			   .attr("cx", function(d) {return xScale(d[0]);})
+			   .attr("cy", function(d) {return yScale(d[1]);})
+			   .attr("r", function(d) { return rScale(d[1]);})
+			   .attr("fill",function(d){if (d[0]>100) {return "teal"} else {return "orange"}});
+
+		
+			svg.append("g")
+			    .attr("class", "axis")
+			    .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis);  
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis);                                 
+        
+</script>
+
+<h2 id="section-1">Источники для самостоятельного изучения</h2>
+
+<p>В этой статье мы очень поверхностно ознакомились с самыми основными принципами рисования графики с помощью D3.js. Для подробного изучения стоит прочитать несколько книг.</p>
+
+<p>Начинать стоит с книги <strong>Interactive Data Visualization</strong>. Лучше использовать ее <a href="http://chimera.labs.oreilly.com/books/1230000000345/">бесплатную электронную версию</a>, потому что там более актуальный код и есть интерактивные примеры.</p>
+
+<p>Для дальнейшего углубления подойдет <strong>Data Visualization with D3.js Cookbook</strong>. В ней хорошо и подробно описаны фундаментальные принципы работы библиотеки.</p>
+
+<p><img src="/images/bookcover1.jpg" width="272" height="336" title="Interactive Data Visualization" > <img src="/images/bookcover2.png" width="272" height="336" title="Data Visualization with D3.js Cookbook" ></p>
+
+<p>Помимо книг, есть несколько хороших источников знаний по теме в Интернете:</p>
+
+<ul>
+  <li><a href="http://bost.ocks.org/mike/">сайт Майка Бостока</a> — автора библиотеки. Здесь много хороших примеров и просто интересных статей;</li>
+  <li><a href="https://github.com/mbostock/d3/wiki">wiki проекта на GitHub</a> — наиболее полное описание всех функций;</li>
+  <li><a href="https://www.dashingd3js.com/">Learn how to make Data Visualizations with D3.js</a> — пошаговое руководство для начинающих;</li>
+  <li><a href="http://square.github.io/intro-to-d3/">Intro to D3.js</a> — еще одно;</li>
+  <li><a href="http://www.d3noob.org/">D3.js Tips &amp; Tricks</a> — здесь встречаются полезные советы и объяснения тонких мест.</li>
+</ul>
+
+<p>Единственным полезным источником на русском (помимо нашего блога) являются материалы «Лаборатории данных»:</p>
+
+<ul>
+  <li><a href="http://d3-js.ru/mike/join/">«Мыслим связками»</a> — перевод статьи Майка Бостока. Очень полезная статья для понимания связи между данными и представлением в D3;</li>
+  <li><a href="http://habrahabr.ru/company/datalaboratory/blog/217905/">Введение в D3</a> на Хабре;</li>
+  <li><a href="http://brainwashing.pro/dataviz-online">Онлайн-курс «Визуализация. Основы»</a> включает в себя раздел про D3.</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Что такое Data Science?]]></title>
+    <link href="http://datadeep.ru/blog/2014/11/07/chto-takoie-data-science/"/>
+    <updated>2014-11-07T14:08:41+03:00</updated>
+    <id>http://datadeep.ru/blog/2014/11/07/chto-takoie-data-science</id>
+    <content type="html"><![CDATA[<p>Блог datadeep.ru будет посвящён <em>Data Science</em> (<em>Науке о данных</em>, по-русски её также иногда называют <em>Даталогия</em>). Поэтому первый пост в блоге мне представляется логичным посвятить описанию науки о данных в представлении авторов блога, чтобы читатель мог составить для себя мнение о том, что его ждёт в дальнейшем.</p>
+
+<p><img src="/images/data_science.jpg" width="768" height="576" title="Data Science" ></p>
+
+<!-- more -->
+
+<p><a href="http://blog.andreamostosi.name/2014/09/how-to-stay-updated-about-data-science-and-big-data/">Первоисточник картинки.</a></p>
+
+<p>В последние несколько лет в науке и промышленности можно наблюдать повышенный интерес к новой области знания, называемой Data Science или Наука о данных. Компания McKinsey оценивает нехватку специалистов к 2018 году в 140 000 - 190 000 человек. Журнал Harvard Business Review назвал науку о данных одной из самых перспективных профессий (the sexiest job) XXI века. Резко возрос спрос на таких специалистов.</p>
+
+<p><img src="/images/Data_Scientist_Job_Trend.png" title="Job Trends" ></p>
+
+<p>Такие компании, как Google, Facebook, Microsoft, Apple, Linkedin, Baidu активно нанимают к себе профессионалов в области науки о данных. В Интернете появилось большое количество ресурсов, посвящённых Data Science, например, различные MOOC (online-курсы по Machine Learning и Data Mining на образовательных сайтах), специализированные блоги. В прессе появляется всё больше сообщений об успехах в области науки о данных. Университеты предлагают студентам программы обучения по Data Science (например, Имперский колледж Лондона, Вашингтонский университет, Нью-Йоркский университет и т.д.). Что же такое — наука о данных?</p>
+
+<p>Потребность в анализе данных, нахождении в них закономерностей во многом обусловлена феноменом Big Data, т.е. необходимостью в манипулировании и обработке данных огромных объёмов, различной природы, часто плохо структурированных. Это стало возможно благодаря развитию Интернета и технологий хранения и передачи информации. У компаний накопилось очень много различных данных, и закономерно появилась задача извлечения из них полезной информации, которая может помочь в принятии решений. Традиционным подходом к проблемам такого вида была статистика, получившая большое развитие в XX веке. Однако, одних возможностей, которые предоставляет статистический аппарат, мало для всестороннего анализа больших неструктурированных данных. Стало понятно, что специалисту по анализу данных необходим сплав знаний из различных областей математики, статистики, информатики и предметной области знаний. Кроме того, стоит выделить в отдельную категорию задачи, связанные с искусственным интеллектом, такие как компьютерное зрение, обработка естественного языка, речи. Таким образом, Data Science является весьма эклектичной дисциплиной, это хорошо показано на диаграмме (ставшей обязательной для статей о Data Science, <a href="http://drewconway.com/zia/2013/3/26/the-data-science-venn-diagram">первоисточник</a>):</p>
+
+<p><img src="/images/venn_diag.png" title="Venn Diagram" ></p>
+
+<p>На мой взгляд, основные области, в которых требуются знания человеку, занимающемуся наукой о данных (его называют <em>data scientist</em> или иногда <em>датологом</em>) являются статистика и математика, машинное обучение, информатика (Computer Science), различные прикладные области. Сделаем их краткий обзор. Однако, перед этим давайте разберёмся с самим термином “наука о данных”.</p>
+
+<p>Сейчас можно найти огромное количество различной информации на этот счёт: от Википедии до блогов. Во всех этих источниках нет чёткого и однозначного определения Data Science, что не удивительно, потому что наука о данных — ещё очень молодая и активно развивающаяся область знания, она не успела как следует оформиться ни в академических кругах, ни в обществе.</p>
+
+<p>Существует несколько более-менее устоявшихся в научной литературе и публицистике терминов, связанных с наукой о данных: Data Science, Data Mining (интеллектуальный анализ данных), Machine Learning (машинное обучение). Значения и взаимосвязь этих терминов в разных источниках могут трактоваться по-разному, я рассматриваю Machine Learning как часть Data Mining, которая в свою очередь входит в понятие Data Science. В этой статье я постараюсь рассказать, чем является наука о данных на мой взгляд.</p>
+
+<h2 id="section">Статистика и математика</h2>
+
+<p>Для успешного применения алгоритмов анализа данных, для того, чтобы иметь возможность их исследовать и модернизировать под нужды конкретной задачи, важна базовая математическая подготовка на уровне университетских курсов. Нужны знания в линейной алгебре, математическом анализе, функциональном анализе, теории графов. Конечно, вполне возможно просто применять готовые решения к данным (например, библиотеки Apache Mahout для Java, scikit-learn для Python, множество пакетов для языка R и т.д.), однако для получения наилучшего результата анализа данных часто бывает необходима настройка алгоритмов для решения поставленной задачи, и человек, обладающий соответствующей математической подготовкой, имеет большую свободу в этом вопросе. И я не говорю про научное исследование методов анализа данных, в этом случае ясно, что без знания математических основ не обойтись. Отмечу, что на мой взгляд для успешной практики в Data Science не требуются глубокие знание в описанных выше областях, но вполне могут возникнуть задачи, для решения которых потребуется увеличить познания в какой-то из этих тем, например, для решения задачи кластеризации на графах явно не будет лишним повысить осведомлённость в теории графов.</p>
+
+<p>Особняком стоит теория вероятностей. Она является базой для математической статистики и машинного обучения. Почти все методы анализа данных основаны на ней. Кроме того, существует перспективный класс методов стохастической оптимизации, который использует аппарат теории вероятностей, а оптимизация является составной частью машинного обучения. Про машинное обучение и оптимизацию будет рассказано дальше. Исходя из всего этого, достаточно глубокие знания в теории вероятностей очень важны для успешного анализа данных.</p>
+
+<p>Одним из краеугольных камней Data Science является математическая статистика. Это наука, которая на основе ограниченной выборки позволяет сделать выводы о структуре данных, используя для оценки точности этих выводов теорию вероятностей. Статистический аппарат представляет собой совокупность различных методов построения вероятностных моделей для описания природы случайных событий. Долгое время анализ данных и статистика были практически синонимами. Можно выделить несколько разделов статистики. Такие методы, как построение таблиц, графиков данных, выделение различных количественных показателей из данных (среднее значение, стандартное отклонение, эксцесс, квантиль, математическое ожидание, дисперсия и т.д.) являются элементами описательной статистики. Она часто применяется при первичной обработке данных для того, чтобы составить некоторое первоначальное представление о них. С этой процедурой связаны методы очистки данных, т.е. удаления инородных, ненужных элементов, которые могут отрицательно сказаться на результатах анализа. Кроме того, стоит упомянуть связанные с предыдущими процедуры Data Munging или Data Wrangling, которые используют визуализацию, статистические модели, методы описательной статистики и другие подходы для преобразования данных в некоторый более удобный для дальнейшей работы вид.</p>
+
+<p>Следующим разделом статистики являются методы оценивания. Они позволяют по выборке данных построить оценки различных параметров (в предположении, что данные описываются некоторыми вероятностными распределениями): математического ожидания, стандартного отклонения, квантилей, плотности и функции распределений. Также существуют методы, которые строят так называемые доверительные интервалы для искомых параметров. Другой важной областью является проверка статистических гипотез, задача которой состоит в проверке утверждений о распределении случайной величины по выборке из данных. Для этого строятся доверительная, критическая области, статистика критерия (с помощью выборки) и проверяется её попадание в одну из этих областей, на основании чего делаются некоторые вероятностные выводы о том, отвергается ли утверждение. Сюда относятся такие понятия, как ошибки первого и второго рода, мощность критерия, уровень значимости.</p>
+
+<h2 id="section-1">Машинное обучение</h2>
+
+<p>Следующей частью, входящей в состав науки о данных, является <em>Машинное обучение</em> (<em>Machine Learning</em>). Существует большое количество вариантов определения этого понятия. В книге Тома Митчелла (Tom Mitchell) “Machine Learning” приводится следующее объяснение (довольно часто цитируемое):</p>
+
+<blockquote>
+  <p>Будем говорить, что компьютерная программа обучается из опыта E относительно некоторого класса задач T и меры качества P, если качество её работы на задачах из T, измеренное с помощью P, возрастает с опытом E.</p>
+</blockquote>
+
+<p>Машинное обучение применяется в тех случаях, когда существует некоторая закономерность, структура в данных, которую необходимо извлечь, но это нельзя сделать обычным математическим путём, и для достижения поставленной цели используются данные. Таким образом, можно сказать, что машинное обучение занимается обучением модели из доступных данных так, чтобы она наилучшим образом обобщалась на неизвестные данные относительно некоторой меры качества.</p>
+
+<p>Существует несколько близких к понятию Machine Learning, а, зачастую, и обозначающих его в книгах и статьях, терминов: <em>Statistical Learning</em> и <em>Pattern Recognition</em>. Statistical learning (статистическое обучение) встречается в работах, связанных с теорией Вапника-Червоненкиса, машиной опорных векторов (SVM), обобщающей способностью алгоритмов. Pattern recognition (распознавание образов) часто упоминается в статьях и книгах по кибернетике и математической оптимизации.</p>
+
+<p>Рассмотрим основные классы методов машинного обучения. Пусть входные данные состоят из объектов, имеющих как наблюдаемые свойства, так и ненаблюдаемые, но известные. Алгоритмы, которые вычисляют эти ненаблюдаемые свойства по наблюдаемым, причём не только для входных данных, но и для любых других, называются алгоритмами <em>обучения с учителем</em> (<em>supervised learning</em>). Т.е. тренировочная выборка данных состоит из пар $(x_k, y_k)$, где $x_k$ — объект данных, а $y_k$ — некоторое числовое значение. На практике обычно строят хотя бы алгоритм, который ошибается не очень часто и не очень сильно. После обучения получается модель $h_{\theta}(x)$, зависящая от параметров $\theta$, и принимающая на вход новые объекты, для которых предсказывает соответствующее числовое значение. Задачи обучения с учителем различают в зависимости от природы $y_k$: если $y_k$ означает принадлежность к какому-то классу (метка класса), т.е. принимает значения на ограниченном множестве целых чисел, то задача называется задачей <em>классификации</em> (или <em>распознавания</em>), в противном случае, когда $y_k$ может быть любым вещественным числом, задача называется <em>задачей регрессии</em>. Примеры методов этого класса: метод $k$ ближайших соседей, логистическая регрессия, нейронные сети, машина опорных векторов, наивный байесовский классификатор.</p>
+
+<p>Приведу пример работы алгоритма обучения с учителем. На картинке ниже изображены данные: ярким цветом — тренировочные, более блёклым — тестовые.</p>
+
+<p><img src="/images/supervised_learning_data.png" title="Supervised Learning Data" ></p>
+
+<p>На следующей картинке изображён результат работы метода $k$ ближайших соседей на этих данных, ошибка классификации: $0.9$.</p>
+
+<p><img src="/images/supervised_learning_res.png" title="Supervised Learning Result" ></p>
+
+<p>Существует и класс алгоритмов <em>обучения без учителя</em> (<em>unsupervised learning</em>). В этом случае входные данные состоят только из объектов $x_k$. Обучение без учителя является очень важным разделом машинного обучения, т.к. данных, не имеющих меток (например, картинок, для которых не указано, что на них изображено), в огромное количество раз больше, чем размеченных данных, потому что метки классов чаще всего расставляются вручную. К этому классу алгоритмов можно отнести методы понижения размерности данных, <em>обучения признаков</em> (<em>feature learning</em>), но одними из самых используемых являются методы <em>кластерного анализа</em> (<em>cluster analysis</em>). Пусть входные данные состоят из объектов с некоторыми наблюдаемыми свойствами. Алгоритм, который разбивает данные на группы (кластеры) и определяет, какому кластеру принадлежит объект, называется алгоритмом <em>кластеризации</em>. Данные разбиты на группы так, что внутри каждого кластера объекты похожи, а объекты из разных кластеров — непохожи. При этом такое разбиение статистически верно не только для входных данных, но и для новых, неизвестных ранее объектов. Примеры: метод $k$-средних, спектральная кластеризация, анализ главных компонент (PCA).</p>
+
+<p>Проиллюстрирую работу алгоритма обучения без учителя. На картинке ниже изображены входные не размеченные данные.</p>
+
+<p><img src="/images/unsupervised_learning_data.png" title="Unsupervised Learning Data" ></p>
+
+<p>На следующей картинке изображён результат работы метода $k$-средних для $k=3$.</p>
+
+<p><img src="/images/unsupervised_learning_res.png" title="Unsupervised Learning Result" ></p>
+
+<p>В отдельный класс выделяют алгоритмы <em>обучения с подкреплением</em> (<em>reinforcement learning</em>). Это особый вид машинного обучения, при котором обучение происходит путём взаимодействия с внешней средой. На вход такому алгоритму подаются данные, состоящие из $(x_k, y_k)$, где $y_k$ — некая реакция среды. Обучение с подкреплением является очень интересной областью для исследований, которая активно используется в кибернетике и робототехнике. Хорошими примерам задач для методов этого класса являются игры. Например, существуют реализации алгоритмов обучения с подкреплением для игры в шахматы или в “Space Invaders” (компания <a href="http://deepmind.com/">DeepMind</a>). Примером таких методов может служить Q-обучение.</p>
+
+<p>Двумя основными дисциплинами, на пересечении которых находится машинное обучение, являются статистика и математическая оптимизация. О статистике мы уже говорили в предыдущем разделе. Алгоритмы машинного обучения строят вероятностные модели, используя аппарат теории вероятностей и математической статистики, например, широко применяются такие инструменты, как байесовская статистика, анализ главных компонент, факторный анализ, анализ временных рядов, метод максимума правдоподобия, корреляционный анализ и т.д.</p>
+
+<p>Оптимизация — это класс задач нахождения некоторых наилучших, оптимальных значений для достижения поставленной цели. Говоря более формально, задача оптимизации заключается в нахождении максимума или минимума (экстремума) целевой функции при выполнении некоторых линейных или нелинейных ограничений. Методами решения таких задач занимается математическое программирование. Оптимизация исключительно важна для машинного обучения, потому что после выбора модели необходимо найти её оптимальные параметры. Эта процедура сводится к минимизации некоторого функционала среднего риска</p>
+
+<script type="math/tex; mode=display">F(\theta) \to \min_{\theta},</script>
+
+<p>задаваемого с помощью меры ошибки. Например, достаточно распространённой является квадратичная мера ошибки, тогда</p>
+
+<script type="math/tex; mode=display">F(\theta) = \frac{1}{N} \sum_{k=1}^N (y_k - h_{\theta}(x_k))^2.</script>
+
+<p>Этот процесс и называется обучением. В машинном обучении широко применяются такие алгоритмы оптимизации, как градиентный спуск,  квазиньютоновский метод, метод множителей Лагранжа, стохастическая оптимизация и другие.</p>
+
+<p>Методы оптимизации — это сердце каждого алгоритма машинного обучения, т.к. именно с помощью них происходит непосредственно обучение. От них во многом зависит скорость работы и количество используемых ресурсов. Развитие машинного обучения напрямую связано с развитием техник оптимизации. К примеру, открытие и развитие метода обратного распространения ошибки оказало большое влияние на возобновление интереса учёных и практиков к нейронным сетям. Многие открытые проблемы алгоритмов машинного обучения связаны с задачами оптимизации. <em>Вычислительная теория обучения</em> (<em>Computational Learning Theory</em>) занимается вопросами, во многом относящимися к оптимизации в машинном обучении. Существуют конференции, посвящённые проблемам оптимизации в машинном обучении, например крупная конференция <a href="http://orfe.princeton.edu/conferences/colt2015/the-conference/announcements/announcement-2014-10-04-134500">Conference on Learning Theory</a>. В последнее время в связи с развитием концепции Big Data становится актуальной задача распределённых вычислений и оптимизации в машинном обучении.</p>
+
+<p>Кроме того, хочется отметить значимую роль машинного обучения в кибернетике и исследованиях, связанных с искусcтвенным интеллектом. Оно является важной частью ИИ, и развитие в этой области во многом сопряжено с прогрессом в машинном обучении. Алгоритмы машинного обучения позволяют компьютеру самостоятельно извлекать информацию из данных в процессе работы и помогают ему принимать решения. При использовании этих методов исследователи добиваются значительного прогресса в таких областях искусственного интеллекта, как понимание машиной текстов, человеческой речи, компьютерное зрение, синтез речи. Кроме того, с помощью алгоритмов машинного обучения создаются интеллектуальные сервисы, такие как переводчики с одного языка на другой, системы, рекомендующие контент на соответствующих сайтах и т.д. Учёные в области искусственного интеллекта активно занимаются исследованиями в машинном обучении, например, известный футуролог Рэймонд Курцвейл работает в должности технического директора в области машинного обучения и обработки естественного языка в компании Google.</p>
+
+<h2 id="computer-science--">Computer Science и программирование</h2>
+
+<p>Навыки в области Computer Science (информационных технологий) очень важны для того, кто занимается Data Science. В одной из <a href="http://www.quora.com/What-is-the-difference-between-a-data-scientist-and-a-statistician">дискуссий на Quora</a> я встретил такое определение:</p>
+
+<blockquote>
+  <p>Человек, занимающийся наукой о данных — это тот, кто лучше разбирается в статистике, чем любой программист, и лучше разбирается в программировании, чем любой статистик.</p>
+</blockquote>
+
+<p>Data scientist является практиком, а не теоретиком. Он постоянно работает с данными и исследует работу алгоритмов машинного обучения на практике. Для этого он использует различные технологии, языки программирования и библиотеки.</p>
+
+<p>Для разработки прикладных программ тому, кто занимается наукой о данных, нужно знать некоторые теоретические вещи из Computer Science: классические алгоритмы и структуры данных, умение оценивать вычислительную сложность алгоритмов, знание принципов объектно ориентированного программирования и шаблонов проектирования.</p>
+
+<p>Из языков программирования наиболее распространёнными и востребованными в области анализа данных являются Java, Python, C/C++, Scala. Также необходимы навыки работы с базами данных и знание SQL. Будут полезны навыки работы в Linux. Кроме того, существуют специализированные инструменты и библиотеки для использования методов машинного обучения и работы с данными, основные из них:</p>
+
+<ul>
+  <li>Библиотеки для Python: NumPy, SciPy, Pandas, IPython, scikit-learn, Nltk, Theano и другие;</li>
+  <li>Язык программирования R — специализированный язык для анализа данных, имеет большое количество модулей, реализующих статистические инструменты и методы машинного обучения;</li>
+  <li>Weka — инструментарий для анализа данных, написанный на Java;</li>
+  <li>Apache Mahout — библиотека, реализованная на Java.</li>
+</ul>
+
+<p>Кроме вышеперечисленных, существуют языки Lua и Julia, которые не имеют такого широкого применения в науке о данных, однако в настоящее время для них активно разрабатываются библиотеки для анализа данных.</p>
+
+<p>Важную роль в практической работе с данными играют инструменты Big Data. В их число входят:</p>
+
+<ul>
+  <li>Hadoop — реализация модели распределённых вычислений MapReduce и набор различных утилит и библиотек для выполнения распределённых вычислений. В его основе лежит файловая система HDFS;</li>
+  <li>Pig — платформа для создания MapReduce приложений с помощью Hadoop;</li>
+  <li>Hive, Impala — инфраструктуры хранилища данных, построенного на основе Hadoop;</li>
+  <li>Spark — инструментарий для распределённого анализа данных;</li>
+  <li>NoSQL базы данных: HBase, MongoDB, Apache Cassandra.</li>
+</ul>
+
+<p>На всех этапах анализа данных большую роль играет их визуализация. Полезно взглянуть на некоторые графические представления данных перед началом работы, чтобы лучше понять, какие методы имеет смысл применять. Во время проведения анализа графики могут помочь отобразить промежуточную картину, а после окончания работы с данными с помощью грамотной визуализации можно наглядно представить и объяснить полученные результаты. Рассмотрим основные инструменты визуализации:</p>
+
+<ul>
+  <li>Matplotlib — библиотека для языка Python, предназначенная для визуализации в стиле графиков Matlab;</li>
+  <li>Язык R содержит большое количество способов визуализации данных. С помощью его инструментов можно легко рисовать различные статистические графики: гистограммы, ящики с усами, диаграммы рассеяния, доверительные интервалы, временные ряды и т.д. Отдельно хочется выделить ggplot2 — мощную библиотеку для создания информативных и красивых графиков;</li>
+  <li>D3.js — мощная JavaScript-библиотека для обработки и визуализации данных, с помощью которой можно создавать интерактивные графики.</li>
+</ul>
+
+<h2 id="section-2">Прикладные области</h2>
+
+<p>Завершая обзор науки о данных, хочется рассказать об областях её активного применения. Это далеко не полный перечень, в нём представлены наиболее интересные на мой взгляд и получившие в последнее время активное развитие направления. Эти прикладные области во многом связаны с искусственным интеллектом.</p>
+
+<p>Компьютерное зрение (Computer Vision) — это технологии, позволяющие машине решать задачи оптического распознавания объектов. К примерам задач этого класса можно отнести:</p>
+
+<ul>
+  <li>Оптическое распознавание символов (Optical Character Recognition, OCR) — распознавание символов, таких как буквы и цифры. Применяется для цифровой обработки и распознавания отсканированных текстов, рукописных текстов, надписей, содержащихся на фотографиях;</li>
+  <li>Распознавание образов — идентификация и классификация содержания изображения;</li>
+  <li>Отслеживание объекта на видео (tracking);</li>
+  <li>Понимание положения — оценка того, какое положение, какую позу занимает объект на изображении;</li>
+  <li>Поиск изображения по содержанию — поиск изображений, которые отвечают заданному запросу. Запрос может быть задан различными путями, например, с помощью текста или картинки.</li>
+</ul>
+
+<p>Обработка естественного языка (Natural Language Processing, NLP) — технологии, связанные с анализом и синтезом естественных языков. Целью этого направления является разработка систем, понимающих тексты на обычном человеческом языке. Это направление является очень важной частью анализа данных. Примеры задач, которыми занимается NLP:</p>
+
+<ul>
+  <li>Тэгирование текста (Part-of-speech tagging) — автоматическое распознавание частей речи слов в тексте. Может применяться для выделения именованных сущностей;</li>
+  <li>Построение синтаксического дерева (Parse tree) — с помощью него анализируется смысл предложения;</li>
+  <li>Машинный перевод текста с одного языка на другой;</li>
+  <li>Информационный поиск;</li>
+  <li>Определение темы текста;</li>
+  <li>Анализ тональности текста.</li>
+</ul>
+
+<p>Распознавание речи (Speech Recognition) и синтез речи — направления исследований, целью которых является создание машин, способных понимать и воспроизводить человеческую речь, что позволит разработать новые более естественные для человека интерфейсы взаимодействия с компьютером.</p>
+
+<p>Современные поисковые системы активно используют разработки в области науки о данных (например, к ним можно отнести известный алгоритм PageRank). Рекомендательные системы, позволяющие определить, что будет интересно пользователю на основе информации о нём и о его действиях в системе, также являются областью приложения для Data Science. Другим активно развивающимся направлением является биоинформатика, которая занимается исследованием генов, структуры белков и биологических систем.</p>
+
+<h2 id="section-3">Заключение</h2>
+
+<p>В этой статье я сделал обзор науки о данных такой, какой я её понимаю. В качестве некоторого summary этого обзора хочу привести прекрасную иллюстрацию дороги, которую необходимо пройти датологу (<a href="http://nirvacana.com/thoughts/becoming-a-data-scientist/">первоисточник</a>):</p>
+
+<p><img src="/images/RoadToDataScientist1.png" title="Data Scientist Road" ></p>
+
+<p>Конечно, невозможно объять необъятное, поэтому специалистов, занимающихся наукой о данных, можно разделить на две категории:</p>
+
+<ol>
+  <li>Аналитики — эти люди заточены на анализ данных, чаще всего они приходят из статистики или математики. Они занимаются построением моделей из данных, вытаскиванием из них информации с помощью методов статистики и машинного обучения;</li>
+  <li>Разработчики — эти люди прекрасно владеют всем тем, что было описано в разделе “Computer Science и программирование”. Они заточены на создание конечных, работающих с пользователем продуктов. Они умеют добывать, хранить и манипулировать данными.</li>
+</ol>
+
+<p>Такая классификация является очень условной, это два крайних класса, чаще всего на практике датологи попадают в среднюю между этими двумя категорию, согласно своим интересам и профессиональным обязанностям.</p>
+
+<p>В дальнейшем в блоге datadeep.ru наша команда будет развивать и дополнять многие темы, затронутые в этой статье.</p>
+
+<h2 id="data-science">Полезные материалы по Data Science</h2>
+
+<p>Существует большое количество литературы, ресурсов в Интернете, online-курсов, посвящённых Data Science. Приведу ссылки на наиболее базовые и полезные на мой взгляд материалы:</p>
+
+<ul>
+  <li>Книги по Data Science и Machine Learning:
+    <ul>
+      <li><a href="http://statweb.stanford.edu/~tibs/ElemStatLearn/">The Elements of Statistical Learning: Data Mining, Inference, and Prediction</a>, Trevor Hastie, Robert Tibshirani, Jerome Friedman;</li>
+      <li><a href="http://research.microsoft.com/en-us/um/people/cmbishop/PRML/">Pattern Recognition and Machine Learning</a>, Christopher M. Bishop;</li>
+      <li><a href="http://www.cambridge.org/us/academic/subjects/computer-science/knowledge-management-databases-and-data-mining/data-mining-and-analysis-fundamental-concepts-and-algorithms">Data Mining and Analysis: Fundamental Concepts and Algorithms</a>, Mohammed J. Zaki, Wagner Meira Jr.;</li>
+      <li><a href="http://www.recognition.mccme.ru/pub/RecognitionLab.html/slbook.pdf">Введение в методы статистического обучения</a>, А. Б. Мерков.</li>
+    </ul>
+  </li>
+  <li>Книги по инструментам Data Science:
+    <ul>
+      <li><a href="http://shop.oreilly.com/product/0636920023784.do">Python for Data Analysis</a>, Wes McKinney;</li>
+      <li><a href="http://shop.oreilly.com/product/0636920018483.do">Machine Learning for Hackers</a>, Drew Conway, John Myles White.</li>
+    </ul>
+  </li>
+  <li>Online-курсы:
+    <ul>
+      <li><a href="https://www.coursera.org/course/ml">Machine Learning</a> на Coursera, преподаватель Andrew Ng;</li>
+      <li><a href="https://www.edx.org/course/caltechx/caltechx-cs1156x-learning-data-2516#.VFqFQfmsWSo">Learning From Data</a> на edX, преподаватель Yaser S. Abu-Mostafa.</li>
+    </ul>
+  </li>
+  <li>Полезные ресурсы, посвящённые Data Science:
+    <ul>
+      <li><a href="http://www.kdnuggets.com/">KDnuggets.com</a> — ресурс с большим количеством новостей и информации от создателя термина Data Mining Григория Пятецкого-Шапиро;</li>
+      <li><a href="http://www.datasciencecentral.com/">datasciencecentral.com</a> — ресурс, содержащий блоги по статистике, машинному обучению и науке о данных в целом;</li>
+      <li><a href="http://www.kaggle.com/">kaggle.com</a> — собрание соревнований по Data Science;</li>
+      <li><a href="http://machinelearningmastery.com/blog/">machinelearningmastery.com</a> — блог по вопросам, связанным с машинным обучением;</li>
+      <li><a href="http://www.machinelearning.ru/wiki/index.php?title=%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0">machinelearning.ru</a> — ресурс, посвящённый машинному обучению и анализу данных.</li>
+    </ul>
+  </li>
+</ul>
+]]></content>
+  </entry>
+  
+</feed>

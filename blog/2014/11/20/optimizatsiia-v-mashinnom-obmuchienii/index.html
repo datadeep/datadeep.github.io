@@ -1,0 +1,508 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Оптимизация в машинном обучении - DataDeep</title>
+  <meta name="author" content="Команда datadeep.ru">
+
+  
+  <meta name="description" content="Роль оптимизации в машинном обучение. Градиентный спуск на пальцах. Решение задачи линейной регрессии методом градиентного спуска">
+  <meta name="keywords" content="машинное обучение, градиентный спуск, оптимизация, линейная регрессия">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="DataDeep" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-56118002-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">DataDeep</a></h1>
+  
+    <h2>Sapere aude</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation">
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:datadeep.ru" />
+    <input class="search" type="text" name="q" results="0" placeholder="Поиск"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Блог</a></li>
+  <li><a href="/blog/archives">Архив блога</a></li>
+  <li><a href="/about_blog">О блоге</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Оптимизация в машинном обучении</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-20T23:00:01+03:00'><span class='date'>20/11/2014</span> <span class='time'>23:00</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://datadeep.ru">Комментарии</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><img src="/images/optim_surface.png" width="768" height="576" title="Surface" />
+<script type="math/tex">\newcommand{loss}{\ell}
+\newcommand{risk}{F}
+\newcommand{hyp}{h}
+\newcommand{eps}{\varepsilon}</script></p>
+
+<p>Привет, читатель! Обсуждая науку о данных, нельзя не упомянуть машинное обучение, а говоря о машинном обучении, никак невозможно пройти мимо такой темы как <em>оптимизация</em>. Что же такое оптимизация и какая она бывает? Как оптимизация связана с машинным обучением? Как быть быстрее, оптимальнее, точнее?</p>
+
+<p>Если эти вопросы вызывают интерес — заходите.</p>
+
+<!-- more -->
+
+<h2 id="section">Связь оптимизации и машинного обученния</h2>
+
+<p>Что такое оптимизация? В двух словах, оптимизация (как область знаний) изучает как <em>что-то</em> сделать <em>лучше</em>. Вернее, как <em>что-то</em> сделать <em>наилучшим образом</em>, то есть — <em>оптимально</em>. Оптимальность, обычно, понимается в смысле максимизации или минимизации определенного значения. Например, мы можем искать наиболее выгодную стратегию игры на бирже, максимизируя ожидаемую прибыль, или аэродинамически наиболее эффективную форму кузова автомобиля, минимизируя сопротивление воздуха. Конечно же, этими примерами оптимизация не ограничивается, встречаясь повсеместно. Можно даже придти к выводу, что практически любой процесс — оптимизационный с той или иной точки зрения, но это, скорее, вопрос философский.</p>
+
+<p>Разобравшись с оптимизацией “на пальцах”, определим ее формально, а формально задача математической оптимизации записывается следующим образом:</p>
+
+<script type="math/tex; mode=display">\risk(\theta) \longrightarrow \min\limits_{\theta\in\mathcal{X}}.</script>
+
+<p>Так вот, просто и незатейливо. Но постойте, кто эти <script type="math/tex">\risk</script>, <script type="math/tex">\theta</script>, <script type="math/tex">\mathcal{X}</script> и какое отношение они имеют к машинному обучению?</p>
+
+<p>Оказывается, большинство задач машинного обучения формулируются именно таким образом: в виде минимизации некоего функционала <script type="math/tex">\risk</script> по некоторому параметру <script type="math/tex">\theta</script>. Например, в случае задачи классификации или регрессии мы стараемся предсказывать одну переменную (<script type="math/tex">y</script>) на основе другой (<script type="math/tex">x</script>) с помощью набора функций–“оракулов” <script type="math/tex">\{\hyp_\theta\}_{\theta\in\mathcal{X}}</script>, выбирая наилучшую из них на основе <em>обучающей выборки</em> <script type="math/tex">\{x_i, y_i\}_{1}^N</script> — в таком случае мы хотим минимизировать ошибку предсказания на имеющейся выборке. Ошибку предсказания чаще всего записывают как</p>
+
+<script type="math/tex; mode=display">\risk(\theta) = \sum_{i=1}^n \loss(\hyp_{\theta}(x_i), y_i),</script>
+
+<p>где <script type="math/tex">\loss(\hyp_{\theta}(x_i), y_i)</script> — мера отличия предсказания <script type="math/tex">\hyp_{\theta}(x_i)</script> от истинного значения <script type="math/tex">y_i</script>. Чтобы не витать в облаках, рассмотрим конкретный вид <script type="math/tex">\risk(\theta)</script> для двух распространенных методов машинного обучения: метода <script type="math/tex">K</script>-средних и линейной регрессии с квадратичной функцией потерь.</p>
+
+<h4 id="k-">Метод <script type="math/tex">K</script>-средних</h4>
+
+<p>Этот метод решает задачу кластеризации — разбиения множества точек <script type="math/tex">\{x_i\}_1^N</script> на <script type="math/tex">K</script> (<script type="math/tex">\leq N</script>) непересекающихся множеств-кластеров.  Результат кластеризации методом $K$-средних — это, во-первых, разбиение множества ${1,\ldots,N}$ на <script type="math/tex">K</script> кластеров: <script type="math/tex">\{\mathcal{C}_k\}_1^K</script> и, во-вторых, центр каждого из этих кластеров: <script type="math/tex">\{\mu_k\}_1^K</script>. Функция <script type="math/tex">\risk(\theta)</script> при фиксированном $K$ для метода $K$-средних записывается следующим образом</p>
+
+<script type="math/tex; mode=display">\risk\left(\theta = \left(\{\mathcal{C}_k\}_1^K, \{\mu_k\}_1^K\right)\right) = \sum_{k=1}^K \sum_{i\in \mathcal{C}_k} (x_i - \mu_k)^2 \to \min\limits_{\theta},</script>
+
+<p>— то есть метод <script type="math/tex">K</script>-средних ищет такое разбиение множества <script type="math/tex">\{x_i\}_1^N</script> на кластеры, чтобы сумма расстояний от каждой точки до центра кластера, которому она принадлежит, была минимальна.</p>
+
+<h4 id="section-1">Линейная регрессия с квадратичной функцией потерь</h4>
+
+<p>Этот метод решает задачу регрессии — предсказания выходов <script type="math/tex">y_i\in\mathbb{R}</script> по входам <script type="math/tex">x_i=(x_i^{(1)},\ldots,x_i^{(p)})^T\in\mathbb{R}^p</script> на основе обучающей выборки <script type="math/tex">\{ x_i, y_i \}_1^N</script>. Метод линейной регрессии “предполагает”, что выход <script type="math/tex">y_i</script> может быть представлен в виде линейной функции от входов <script type="math/tex">x_i^{(1)},\ldots,x_i^{(p)}</script> и от параметров <script type="math/tex">\theta^{(1)},\ldots,\theta^{(p)}</script>: <script type="math/tex">y_i = \sum_{j=1}^p \theta^{(j)} x_i^{(j)}</script>. <script type="math/tex">\risk(\theta)</script> записывается следующим образом:</p>
+
+<script type="math/tex; mode=display">\risk(\theta) = \sum_{i=1}^N (x_i^T\theta - y_i)^2 \to \min\limits_{\theta},</script>
+
+<p>— здесь минимизируется среднеквадратичное отклонение “предсказаний” <script type="math/tex">x_i^T\theta</script> от истинных значений <script type="math/tex">y_i</script>.</p>
+
+<p>Таким образом, и метод <script type="math/tex">K</script>-средних и линейная регрессия минимизируют конкретные функции <script type="math/tex">F(\theta)</script> (вся хитрость методов, в том <strong>как</strong> они это делают), решая частные задачи оптимизации. Приложив определенные усилия, функция <script type="math/tex">\risk(\theta)</script> может быть выписана для сколь угодно сложной модели, например, для сверточной нейронной сети. Но мы этого делать не будем: и так хорошо понятно, что в машинном обучении оптимизация играет очень важную роль.</p>
+
+<h2 id="section-2">Математическая оптимизация</h2>
+
+<p>Решив, что оптимизация в машинном обучении, а значит и в нашем арсенале — must have, обсудим ее поподробнее.</p>
+
+<p>Математическая оптимизация зародилась в XVIII–XIX века и окончательно оформилась в XX веке. За этот срок у нее появилось множество видов, подвидов, методов и приложений. Как мы и упомянали выше, общая задача оптимизации ставится следующим образом</p>
+
+<script type="math/tex; mode=display">\risk(\theta) \longrightarrow \min\limits_{\theta\in\mathcal{X}},</script>
+
+<p>но от настолько общей постановки мало толку — совершенно непонятно как ее решать: не имея информации о природе <script type="math/tex">\risk</script> и <script type="math/tex">\mathcal{X}</script>, мы безоружны, можем только вслепую тыкать “пальцем в небо” (вернее, в <script type="math/tex">\mathcal{X}</script>) в надежде попасть в точку минимума.
+Собственно, чем не вариант, есть даже схожий по идее метод с вполне себе научным названием: метод <em>равномерного поиска</em> (aka перебора). Суть его, как вы уже догадались, состоит в том, чтобы наложить <script type="math/tex">\varepsilon</script>-сетку на множество <script type="math/tex">\mathcal{X}</script> и измерить функцию <script type="math/tex">\risk</script> в каждом узле сетки. Так найдется узел <script type="math/tex">\hat\theta</script> с наименьшим значением <script type="math/tex">\risk</script>, и … пользы от этого знания будет чуть больше чем никакой.
+Без дополнительных ограничений на <script type="math/tex">\risk</script> и/или <script type="math/tex">\mathcal{X}</script> наш <script type="math/tex">\hat\theta</script> ничего не говорит ни о наимаеньшем значении <script type="math/tex">\risk^* = \min\limits_{\theta\in\mathcal{X}} \risk(\theta)</script> не о соответствующем аргументе <script type="math/tex">\theta^* = \arg\min\limits_{\theta\in\mathcal{X}} \risk(\theta)</script>. Действительно, <script type="math/tex">\risk</script> может меняться сколь угодно быстро, принимая между узлами сетки какие угодно значения, а то и вовсе быть разрывной. То есть знания о функции в узлах не говорит ничего о ней вне этих узлов. Так вот, старались-старались, считали функцию в каждом узле, а толку — ноль.</p>
+
+<p>Но не стоит отчаиваться, надо это дело исправить. В чем наша проблема?
+Проблема наша в излишнней свободе функции $\risk$, точнее в неограниченной скорости ее изменения.</p>
+
+<p>Так давайте ее ограничим! Например, вот так:</p>
+
+<script type="math/tex; mode=display">|\risk(\theta_1) - \risk(\theta_2)| \leq L |\theta_1 - \theta_2|</script>
+
+<p>т.е. мы запретили <script type="math/tex">\risk</script> менятся как угодно быстро, ограничив ее изменение линейно изменением ее аргумента (это условие на <script type="math/tex">\risk</script>, называется <em>условием Липшица</em>, очень, кстати, полезное и распространенное свойство в оптимизации). Теперь наша оценка <script type="math/tex">\hat\theta</script> кое-чего стоит:</p>
+
+<script type="math/tex; mode=display">|\risk(\hat\theta) - \risk^*| \leq \varepsilon L \sqrt{p},</script>
+
+<p>где <script type="math/tex">p</script> — размерность <script type="math/tex">\mathcal{X}</script>. Местоположении <script type="math/tex">\theta^*</script>, однако, до сих пор остается загадкой.</p>
+
+<p>Можно продолжить модифицировать метод перебора, добиваясь лучших гарантий точности (как по параметру, так и по значению функции), и увеличивая вычислительную эффективность (мы вычислили <script type="math/tex">\risk</script> порядка <script type="math/tex">O\left(\frac{V(\mathcal{X})}{\varepsilon^p}\right)</script> раз, где <script type="math/tex">V(\mathcal{X})</script> — объем <script type="math/tex">\mathcal{X}</script>, что даже в невинном единичном кубе при <script type="math/tex">\varepsilon = 0.01</script> даст миллион). Но это займет немало времени, а метод перебора интересен нам сейчас с той только точки зрения, что демонстрирует две важные идеи:</p>
+
+<ol>
+  <li><a href="http://www.no-free-lunch.org/">There is no free lucnh</a>. Чтобы эффективно решить задачу оптимизации, нам нужно ее ограничить — сузить круг поисков. Тем быстрее и точнее мы хотим ее решить, тем более жесткие ограничения нам придется накладывать;</li>
+  <li>Лучшее — враг хорошего. Иногда достаточно найти приближенное к оптимальному решение, сэкономив при этом на ресурсах.</li>
+</ol>
+
+<p>Как было сказано, оптимизация как наука обширна и изучает множество различных задач и методов. Все, однако, нам рассматривать не нужно: в машинном обучении актуальны только некоторые из них, в частности очень распространены так называемые <em>градиентные методы</em>. Нам градиентные методы интересны как с точки зрения того, что развивают две усвоенные ранее идеи, так и из тех соображений, что они являются основой для многих других методов оптимизации. Именно о градиентных методах и пойдет речь далее.</p>
+
+<h2 id="section-3">Градиентные методы</h2>
+
+<p>Идея градиентных методов в том, что в каждой точке <script type="math/tex">\theta_0</script> мы можем измерить градиент функции <script type="math/tex">\nabla \risk(\theta_0)</script>, который подскажет нам, как изменяется функция в окрестности <script type="math/tex">\theta</script>. Попробуем объяснить, откуда растут ноги у этой идеи: зафиксируем <script type="math/tex">\theta_0</script>, <script type="math/tex">\delta</script> и расмотрим разложение функции <script type="math/tex">\risk</script> в ряд Тейлора в точке <script type="math/tex">\theta_0 + \delta</script>:</p>
+
+<script type="math/tex; mode=display">\risk(\theta_0 + \delta) = \risk(\theta_0) +
+\nabla \risk(\theta)\delta +
+\nabla^2 \risk(\theta_0) \frac{\delta^2}{2} +
+\ldots +
+\nabla^n \risk(\theta_0) \frac{\delta^n}{n!} +
+\ldots</script>
+
+<p><script type="math/tex">\delta</script> предполагается достаточно малым, поэтому <script type="math/tex">\delta^n</script> убывает очень быстро и обычно рассматривают только первую компоненту:</p>
+
+<script type="math/tex; mode=display">\risk(\theta_0 + \delta) \simeq \risk(\theta_0) +
+\nabla \risk(\theta)\delta.</script>
+
+<p>Таким образом, в окрестности точки <script type="math/tex">\theta_0</script> мы приблизили <script type="math/tex">\risk</script> линейной функцией. Градиентные методы эксплуатируют это приближение, полагаясь на то, что минимизация <script type="math/tex">\risk</script> эквивалентна минимизации ее линейного приближения в небольшой окрестности точки <script type="math/tex">\theta_0</script>. А что такое “небольшая окрестность”? Ограничим ее шаром с радиусом <script type="math/tex">\alpha</script> <script type="math/tex">(\mid\delta\mid \leq \alpha)</script>, тогда в этой окрестности минимум будет достигаться при</p>
+
+<script type="math/tex; mode=display">\delta^* = \arg\min\limits_{|\delta|\leq \alpha}\left[ \risk(\theta_0) + \nabla \risk(\theta)\delta \right] = - \alpha\frac{\nabla \risk(\theta)}{|\nabla \risk(\theta)|}.</script>
+
+<p>Фактически, мы сделали шажок длиной <script type="math/tex">\alpha</script> в направлении <em>противоположном</em> направлению градиента <script type="math/tex">\nabla \risk(\theta)</script>. Это вполне логично, ведь направление градиента — это направление наибольшего роста функции, а противоположное ему — направление наискорейшего ее уменьшения. В этом и заключается основная идея градиентных методов: шаг за шагом, спускаться против направления градиента к минимуму. С этими знаниями можем уже сформулировать простенький алгоритм оптимизации</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\text{Simple_Gradient_Descent}(\risk, \, \theta_0, \, \alpha):
+\\
+\begin{eqnarray*}
+& \qquad \qquad & k \leftarrow 0
+\\
+& \qquad \qquad& \textbf{while} \; not \; converged \;:
+\\
+& \qquad \qquad & \qquad k \leftarrow k + 1
+\\
+& \qquad \qquad & \qquad \theta_k \leftarrow \theta_{k-1} - \alpha\frac{\nabla \risk(\theta_{k-1})}{|\nabla \risk(\theta_{k-1})|}
+\\
+& \qquad \qquad & \textbf{return}\; \theta_k
+\end{eqnarray*} %]]></script>
+
+<p>Действительно, ничего сложного: один за другим делаем шажочки длиной <script type="math/tex">\alpha</script> против направления градиента. Условие остановки <script type="math/tex">not\;converged</script> мы пока конкретизировать не будем, это может быть условие на максимальное количество итераций (<script type="math/tex">% <![CDATA[
+k < k_{max} %]]></script>), изменение значения функции <script type="math/tex">% <![CDATA[
+f(\theta_{k-1}) - f(\theta_{k}) < \eps %]]></script>, параметра <script type="math/tex">% <![CDATA[
+||\theta_{k-1} - \theta_{k}||_2 < \eps %]]></script>, нам сейчас это не важно (справедливости ради, на практике зачастую оказывается одним из важнейших вопросов).
+Алгоритм выглядит разумно, но у него есть серьезный недостаток: он учитывает только направление, но не длину градиента. Так мы можем сделать слишком маленький шаг там, где градиент велик, тем самым увеличив количество итерации, либо слишком большой шаг там, где градиент мал, пройдя мимо точки оптимума.</p>
+
+<p>К счастью, мы можем избавится от этих недостатков, немного изменив наш алгоритм</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\text{Gradient_Descent}(\risk, \, \theta_0, \, \alpha):
+\\
+\begin{eqnarray*}
+& \qquad \qquad & k \leftarrow 0
+\\
+& \qquad \qquad& \textbf{while} \; not \; converged \;:
+\\
+& \qquad \qquad & \qquad k \leftarrow k + 1
+\\
+& \qquad \qquad & \qquad \theta_k \leftarrow \theta_{k-1} - \alpha_k\nabla \risk(\theta_{k-1})
+\\
+& \qquad \qquad & \textbf{return}\; \theta_k
+\end{eqnarray*} %]]></script>
+
+<p>Этот “алгоритм” есть ни что иное, как метод <em>градиентного спуска</em> (<em>gradient descent</em>). Известно, что при некоторых условиях на <script type="math/tex">\risk</script> и <script type="math/tex">\alpha_k</script> (например, <script type="math/tex">\risk</script> выпукла, <script type="math/tex">\nabla \risk</script> удовлетворяет условию Липшица, а <script type="math/tex">\alpha_k = \alpha</script> ), значение <script type="math/tex">\risk</script> в оценках метода градиентного спуска <script type="math/tex">\theta_k</script> стремится к оптимальному</p>
+
+<script type="math/tex; mode=display">|\risk(\theta_k) - \risk^*| \xrightarrow{k\to\infty} 0</script>
+
+<p>— это не может не радовать.</p>
+
+<p>Теперь у нас есть теоретически обоснованный алгоритм оптимизации, пора применить его в боевых условиях.</p>
+
+<h2 id="section-4">Пример. Линейная регрессия с использованием метода градиентного спуска</h2>
+
+<p>Выше мы уже упомянали задачу линейной регрессии (с квадратичной функцией ошибки). Напомним ее целевую функцию <script type="math/tex">\risk</script>:</p>
+
+<script type="math/tex; mode=display">\risk(\theta) = \sum_{i=1}^N (x_i^T\theta - y_i)^2 \to \min\limits_{\theta},</script>
+
+<p>В матричном виде она записывается как</p>
+
+<script type="math/tex; mode=display">\risk(\theta) = ||X\theta - y||_2^2 = (X\theta - y)^T (X\theta - y) \to \min\limits_{\theta},</script>
+
+<p>где <script type="math/tex">X\in\mathbb{R}^{N\times p}</script> — матрица, чьи строки — <script type="math/tex">x_i</script>, а <script type="math/tex">y = (y_1,\ldots,y_N)</script>.
+Существует аналитическое решение этой задачи: <script type="math/tex">\hat\theta = (X^T X)^{-1} X^T y</script> (оценка <a href="http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%82%D0%BE%D0%B4_%D0%BD%D0%B0%D0%B8%D0%BC%D0%B5%D0%BD%D1%8C%D1%88%D0%B8%D1%85_%D0%BA%D0%B2%D0%B0%D0%B4%D1%80%D0%B0%D1%82%D0%BE%D0%B2">методом наименьших квадратов</a>). Но операция обращения матрицы довольно <a href="http://en.wikipedia.org/wiki/Computational_complexity_of_mathematical_operations#Matrix_algebra">дорогая</a>, в особенности в задачах, где размерность <script type="math/tex">x</script> огромна и матричные операции просто не могут быть выполнены в памяти.
+К счастью, наша функция <script type="math/tex">\risk</script> удовлетворяет всем необходимым условиям и для нее выполняется соотношение <script type="math/tex">|\risk(\theta_k) - \risk^*| \xrightarrow{k\to\infty} 0</script>. Поэтому мы имеем полное право воспользоваться методом градиентного спуска.</p>
+
+<p>В первую очередь нам нужны данные: <script type="math/tex">\{x_i, y_i\}_1^N</script>, для простоты возьмем модельные (<script type="math/tex">N=1000</script>):</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{eqnarray*}
+&x^{(1)}_i & \sim \mathcal{N}(0, 1), \quad &i=1,\ldots, 1000
+\\
+&y_i &= 2 x^{(1)}_i - 0.5 + \varepsilon_i, \qquad &\varepsilon_i \sim \mathcal{N}(0, 1).
+\end{eqnarray*} %]]></script>
+
+<p>То есть все <script type="math/tex">x_i^{(1)}</script> распределены по стандартному нормальному закону, а <script type="math/tex">y_i</script> — линейная функция от <script type="math/tex">x_i^{(1)}</script> с аддитивной помехой (так же имеющей стандртное нормальное распределение). Ниже изображены эти данные в плоскости <script type="math/tex">(x^{(1)}, y)</script>.
+<img src="/images/data.png" width="768" height="576" title="Data" /></p>
+
+<p>“Лишний” индекс <script type="math/tex">^{(1)}</script> к <script type="math/tex">x^{(1)}</script> мы добавили неспроста: если обозначить <script type="math/tex">x_i^{(2)}=1</script> для всех <script type="math/tex">i</script>, то можно переписать <script type="math/tex">y_i = 2 x_i^{(1)} - \frac{1}{2}x_i^{(2)} + \varepsilon_i</script> и более того, в матричной форме</p>
+
+<script type="math/tex; mode=display">y = X\theta^* + \varepsilon.</script>
+
+<p>где</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+y = (y_1,\ldots,y_n)^T,
+\\
+	X = \begin{pmatrix}
+		x_1^{(1)} & x_1^{(2)} \\ 
+		x_2^{(1)} & x_2^{(2)} \\ 
+		\vdots & \vdots \\
+		x_n^{(1)} & x_n^{(2)}
+	\end{pmatrix},
+\\
+	\varepsilon =(\varepsilon_1,\ldots,\varepsilon_n)^T,
+\\
+ 	\text{a }\, \theta^*=(2, -\frac{1}{2}). %]]></script>
+
+<p>Итак, мы определили <script type="math/tex">X</script> и <script type="math/tex">y</script> (и неизвестный нам по легенде <script type="math/tex">\theta^*</script>). Для того, чтобы воспользоваться методом градиентного спуска остается найти производную <script type="math/tex">\nabla \risk</script>, что довольно просто:</p>
+
+<script type="math/tex; mode=display">\nabla \risk(\theta) =\nabla_\theta \left[ (X\theta - y)^T (X\theta - y)\right] = X^T (X\theta - y) .</script>
+
+<p>Теперь все готово. Остается применить метод градиентного спуска к задаче линейной регрессии со сгенерированными нами данными.
+Зададим <script type="math/tex">\alpha=0.0001</script>. Ниже иллюстрируется работа нашего алгоритма: как изменялась линия регрессии, построенная по оценкам <script type="math/tex">(\theta_k^{(1)},\theta_k^{(2)})</script>, на каждой итерации.</p>
+
+<p><img src="/images/LinearRegression_GradientDescent_50iter.gif" width="768" height="576" title="Gradient Descent iterations" /></p>
+
+<p>Успех: за 56 итераций мы получили приближение c точностью до второго знака после запятой как по параметру <script type="math/tex">(\mid\mid\theta^* - \theta_{56}\mid\mid \simeq 0.02)</script>, так и по значению функции <script type="math/tex">(F(\theta_{56}) - F(\theta^*) \simeq 0.07)</script></p>
+
+<h2 id="section-5">Заключение</h2>
+<p>Надеюсь, мне удалось ответить на вопросы, заданные в самом начале статьи. Мы поставили общую задачу оптимизации, на паре примеров узнали как она связана с задачей машинного обучения, и логично пришли к методу градиентного спуска, даже применив его на практике. Вполне неплохо, в последующих статьях я постараюсь лучше раскрыть тему применения алгоритмов оптимизации в машинном обучении и прояснить некоторые интересные детали.</p>
+
+<p>Напоследок, порекомендую пару интересных материалов по теме:</p>
+
+<ul>
+  <li><a href="http://www.mdk-arbat.ru/bookcard?book_id=3326320">Введение в оптимизацию. Поляк Б.Т.</a> — книга от ученого с мировым именем, не только формальным, но и доступным языком рассказывает об основнах оптимизации, помогая уяснить в первую очередь не конкретные задачи и метода, а идеи, стоящие за ними;</li>
+  <li><a href="http://web.stanford.edu/class/ee364a/">EE364a: Convex Optimization. Бойд С.</a> — записанные курсы Стэндфордского университета по выпуклой оптимизации (мы этого еще не знаем, но методы выпуклой оптимизации — если не самые важные, то абсолютно незаменимые в машинном обучении);</li>
+  <li><a href="http://www.machinelearning.ru/wiki/index.php?title=%D0%9C%D0%B5%D1%82%D0%BE%D0%B4%D1%8B_%D0%BE%D0%BF%D1%82%D0%B8%D0%BC%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D0%B8_%D0%B2_%D0%BC%D0%B0%D1%88%D0%B8%D0%BD%D0%BD%D0%BE%D0%BC_%D0%BE%D0%B1%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D0%B8_%28%D0%BA%D1%83%D1%80%D1%81_%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B9%29">Методы оптимизации в машинном обучении. Кропотов Д.А.</a> — развернутое содержание курса лекций факультета вычислительной математики и кибернетики МГУ. Без конспектов, к сожалению но с отличной подборкой литературы;</li>
+  <li><a href="https://www.coursera.org/course/ml">Machine learning</a> — курс посвященный машинному обучению от известного ученого и сооснователя сервиса онлайн-обучения <a href="https://www.coursera.org">Coursera.org</a> Andrew Ng, который помимо объяснения самих алгоритмов большое внимание уделяет вопросу оптимизации. Между прочим, картинка для привлечения внимания взята из слайдов одной и лекций этого курса (лекции второй недели, посвященные простейшей линейной регрессии).</li>
+</ul>
+
+<p>До встречи!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Опубликовал <span class="fn">Alexander Senov</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-11-20T23:00:01+03:00'><span class='date'>20/11/2014</span> <span class='time'>23:00</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/mashinnoie-obuchieniie/'>Машинное обучение</a>, <a class='category' href='/blog/categories/optimizatsiia/'>Оптимизация</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/" data-via="" data-counturl="http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+  
+    <div id="vk_like"></div>
+    <script type="text/javascript">
+    window.onload = function () {
+        VK.init({apiId: 4631132, onlyWidgets: true});
+        VK.Widgets.Like("vk_like", {type: "mini"});
+    }
+    </script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/11/07/chto-takoie-data-science/" title="Previous Post: Что такое Data Science?">&laquo; Что такое Data Science?</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/" title="Next Post: Краткое введение в D3.js">Краткое введение в D3.js &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Комментарии</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Недавние Посты</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Обнаружение дорожных знаков с помощью Deep Learning</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Краткое введение в D3.js</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/">Оптимизация в машинном обучении</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/07/chto-takoie-data-science/">Что такое Data Science?</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+<section>
+  <h1>Категории</h1>
+    <ul id="category-list"><li><a href='/blog/categories/deep-learning'>deep learning (1)</a></li><li><a href='/blog/categories/vizualizatsiia'>Визуализация (2)</a></li><li><a href='/blog/categories/komp-iutiernoie-zrieniie'>Компьютерное зрение (1)</a></li><li><a href='/blog/categories/mashinnoie-obuchieniie'>Машинное обучение (3)</a></li><li><a href='/blog/categories/optimizatsiia'>Оптимизация (1)</a></li><li><a href='/blog/categories/proghrammirovaniie'>Программирование (1)</a></li><li><a href='/blog/categories/statistika'>Статистика (1)</a></li></ul>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Команда datadeep.ru -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'datadeep';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/';
+        var disqus_url = 'http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+  <script type="text/javascript" src="//vk.com/js/api/openapi.js?75"></script>
+
+
+
+
+</body>
+</html>
+
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
