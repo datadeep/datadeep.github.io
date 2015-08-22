@@ -4,7 +4,7 @@
   <title><![CDATA[Категория: Машинное обучение | DataDeep]]></title>
   <link href="http://datadeep.ru/blog/categories/mashinnoie-obuchieniie/atom.xml" rel="self"/>
   <link href="http://datadeep.ru/"/>
-  <updated>2015-08-21T23:37:09+03:00</updated>
+  <updated>2015-08-22T15:18:01+03:00</updated>
   <id>http://datadeep.ru/</id>
   <author>
     <name><![CDATA[Команда datadeep.ru]]></name>
@@ -14,10 +14,10 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Обнаружение дорожных знаков с помощью Deep Learning]]></title>
-    <link href="http://datadeep.ru/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/"/>
-    <updated>2015-08-21T20:51:56+03:00</updated>
-    <id>http://datadeep.ru/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch&#8217;iu-deep-learning</id>
+    <title type="html"><![CDATA[Обнаружение дорожных знаков при помощи Deep Learning]]></title>
+    <link href="http://datadeep.ru/blog/2015/08/22/obnaruzhieniie-dorozhnykh-znakov-pri-pomoshchi-deep-learning/"/>
+    <updated>2015-08-22T15:15:32+03:00</updated>
+    <id>http://datadeep.ru/blog/2015/08/22/obnaruzhieniie-dorozhnykh-znakov-pri-pomoshchi-deep-learning</id>
     <content type="html"><![CDATA[<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
 
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
