@@ -4,7 +4,7 @@
   <title><![CDATA[DataDeep]]></title>
   <link href="http://datadeep.ru/atom.xml" rel="self"/>
   <link href="http://datadeep.ru/"/>
-  <updated>2015-09-02T20:02:34+03:00</updated>
+  <updated>2015-09-02T20:18:16+03:00</updated>
   <id>http://datadeep.ru/</id>
   <author>
     <name><![CDATA[Команда datadeep.ru]]></name>
@@ -135,7 +135,7 @@
 
 <p>Пример 4: график поведения функции потерь помогает выбрать оптимальное значение параметра алгоритма обучения с учителем</p>
 
-<p><img src="http://datadeep.ru/images/nn_epochs.jpg" /></p>
+<p><img src="http://datadeep.ru/images/nn_epochs.png" /></p>
 
 <p>В следующих статьях мы подробнее рассмотрим инструменты, которые позволяют быстро проводить подобный визуальный анализ.</p>
 
