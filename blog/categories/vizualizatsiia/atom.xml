@@ -4,7 +4,7 @@
   <title><![CDATA[Категория: Визуализация | DataDeep]]></title>
   <link href="http://datadeep.ru/blog/categories/vizualizatsiia/atom.xml" rel="self"/>
   <link href="http://datadeep.ru/"/>
-  <updated>2015-09-02T20:18:16+03:00</updated>
+  <updated>2015-10-28T23:13:57+03:00</updated>
   <id>http://datadeep.ru/</id>
   <author>
     <name><![CDATA[Команда datadeep.ru]]></name>
@@ -12,6 +12,710 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Тематическое моделирование Игры Престолов]]></title>
+    <link href="http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/"/>
+    <updated>2015-10-28T23:59:59+03:00</updated>
+    <id>http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov</id>
+    <content type="html"><![CDATA[<div>
+  <style type="text/css">
+
+    ul{margin:1em 0 1em 2em;}
+    ol{margin:1em 0 1em 2em;}
+
+  </style>
+</div>
+
+<p>Когда мы имеем дело с большим количеством текстовых документов, первое что нас интересует — о чем эти документы: есть ли между ними что-то общее, о чем каждый из документов, о чем они в целом? Попробуем ответить на эти вопросы, воспользовавшись инструментарием науки о данных. Да не просто так, а на примере серии книг “Песнь Льда и Пламени” (кратко, ПЛиО), по мотивом которой снят не безызвестный сериал “Игра Престолов”.</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_tag_cloud.jpg" width="768" height="576" title="КДПВ" ></p>
+
+<!-- more -->
+
+<p>Одно из основных понятий, которое поможет ответить на заданные вопросы —  <em>тема</em>. Тема — это то, о чем говориться в тексте, например, объект его обсуждения. Разумеется, любой может определить основную тему текста, прочитав его. Однако, есть несколько причин поступить иначе. Во-первых, этот процесс достаточно трудоемкий, особенно если учесть потенциально большие коллекции документов (например, весь интернет) — одному человеку все не прочитать. Во-вторых, этот подход субъективный, а хотелось бы получить объективную (а еще лучше, численную) характеристику тематики текста. Наконец, этот блог не о чтении, а об анализе данных. И именно путем анализа данных мы и планируем пойти.</p>
+
+<p>Для автоматического поиска тем в документах мы воспользуемся таким подходом, как <em>тематическое моделирование</em>. Тематическое моделирование — это подраздел машинного обучения, изучающий способы построения <em>тематических моделей</em> по заданному текстовому корпусу. В свою очередь, тематическая модель — это статистическая модель, которая моделирует взаимосвязь наблюдамемых переменных: слов и документов и ненаблюдаемых переменных — тем. Причем, темы строятся (ищутся) автоматически, без участия пользователя (который может лишь задать некоторые параметры модели, например количество тем). </p>
+
+<p>Тем самым, тематическая модель дает ответы на два основных вопроса:</p>
+
+<ol>
+  <li>Какие слова образуют каждую из тем?</li>
+  <li>К каким темам относится каждый из документов?</li>
+</ol>
+
+<p>Причем, тематическая модель отвечает на эти вопросы численно: </p>
+
+<ol>
+  <li>Для каждого слова и каждой темы дается численная характеристика важности слова для этой темы.</li>
+  <li>Для каждой темы и каждого документа дается численная характеристика, характериизующая роль темы в этом документе.</li>
+</ol>
+
+<p>Таким образом, тема фактически задается весами составляющих ее слов. Более того, слова и документы описываются численным вектором в пространстве тем и…, не будем забегать вперед :)</p>
+
+<p>В этой статье мы разберемся в одном из базовых методов тематического моделирования — Латентном Семантическом Анализе (aka, Latent Semantic Analysis, LSA, Latent Semantic Indexing, LSI), затем реализуем его на языке Python, а главное — применим на текстовом корпусе, составленном из книг серии “Песнь Льда и Пламени”. Таким образом, статья состоит из трех частей: теории, практики и результатов. Первая часть не отличается краткостью и может вызвать приступ “T.L.D.R.”, поэтому, если вы знакомы с основами тематического моделирования или же в них не заинтересованы, можете сразу переходить ко второй части. Если же вас интересуют лишь результаты — смело прокручивайте до последней.</p>
+
+<h1 id="section">Часть 1. Теория</h1>
+
+<p>Сначала опишем несколько алгоритмов и подходов, из которых состоит алгоритм тематического моделирования LSA, а затем объеденим их вместе.</p>
+
+<p>Итак, определившись с тем, что мы хотим получить (тематическую модель), остается понять, как же это сделать. Сразу скажу, без математики не обойтись. К сожалению, математике не знакомы понятия “текст”, “документ”, “слово”, “тема” и т.п. Зато, ей хорошо понятен язык чисел и векторов. И именно на язык векторов нам и предстоит перейти для решения нашей задачи. Для этого мы воспользуемся так называемой <em>векторной моделью</em> текста — “переведем” наш корпус с прикладного языка слов и документов на абстрактный язык линейной алгебры.</p>
+
+<h2 id="section-1">Векторная модель</h2>
+<p>Векторная модель — модель представления текстовых документов в виде векторов, где каждое измерение вектора-документа соответствует какому-либо слову. Рассмотрим способ построения этой модели.</p>
+
+<p>Итак, на входе у нас коллекция из <script type="math/tex">N</script> документов. Пронумеруем их числами от 1 до <script type="math/tex">N</script> так,  что индексом <script type="math/tex">d \in \{1..N\}</script> обозначается <script type="math/tex">d</script>-й элемент коллекции. Далее, рассмотрим словарь слов — это все уникальные слова, встречающиеся в наших документах. Допустим, таких слов <script type="math/tex">M</script> штук и пронумеруем их от 1 до <script type="math/tex">M</script> индексом <script type="math/tex">w</script>. Теперь, посчитаем сколько раз каждое слово <script type="math/tex">w=1..M</script> входит в каждый документ <script type="math/tex">d=1..N</script> и обозначим это число <script type="math/tex">n_{d,w}</script>. Из этих чисел сформируем матрицу <script type="math/tex">\mathbf{X} = (n_{d,w})_{d,w}</script> — <a href="https://en.wikipedia.org/wiki/Document-term_matrix">матрицу частот слов в документах</a>. Строки этой матрицы соответствуют документам, а столбцы — словам. Скорее всего, эта матрица будет <em>разряженной</em> — большая часть ее элементов будет равна нулю (ведь каждый документ содержит лишь небольшую долю всех слов).</p>
+
+<p>Перевод окончен! Теперь наш текстовый корпус представлен в виде матрицы <script type="math/tex">\mathbf{X}</script>. 
+В результате получится матрица выглядящая примерно следующим образом.</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_X_matrix_vis.svg" width="384" height="288" title="Матрица документ-слово" ></p>
+
+<p>Стоит заметить, что подобная модель под собой имеет два основных предположения.</p>
+
+<ul>
+  <li>Порядок документов в коллекции не имеет значения.</li>
+  <li>Порядок слов в документе не имеет значения (т.н. модель “мешка слов” или “bag of words”).</li>
+</ul>
+
+<p>Если первое предположение вполне естественно, то второе может показаться неоднозначным. Казалось, даже такая мелочь, как запятая в предложении “казнить нельзя, помиловать” полностью меняет его смысл, что уж говорить о порядке слов даже не в одном предложении, а в нескольких абзацах. Несмотря на это резонное замечание, модель “мешка слов” — одна из наиболее широко используемых и хорошо зарекомендовавшая себя на практике. Тем более это верно для такой задачи, как определение темы. Действительно, как не расставляй слова и знаки препинания в предложении “казнить, нельзя помиловать”, легко понять что речь идет о казни (“казнить” же или “помиловать” — детали).</p>
+
+<h2 id="section-2">Стемминг</h2>
+<p>Далее развивая мысль о значимости тех или иных деталей для определения тематики текста, можно заметить, что слово может встречаться в тексте в различных формах: с различными окончаниями и приставками, — но с единым смыслом. Например, неважно какую форму слова мы встретили в тексте: “казнить”, “казнят”, “казнен”, “казню”, “казнишь”, “казни” — все они относятся к теме “казнь”. Именно на нахождение <a href="https://ru.wikipedia.org/wiki/%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D0%B0_%D1%81%D0%BB%D0%BE%D0%B2%D0%B0">основы слова</a> по той или иной заданной его форме и направлен такой инструмент, как <em>стемминг</em>. 
+Здесь мы не будем разъяснять, какие бывают алгоритма стемминга (а их довольно много) и как они работают. Если возникнет интерес, можно начать со 
+<a href="https://ru.wikipedia.org/wiki/%D0%A1%D1%82%D0%B5%D0%BC%D0%BC%D0%B8%D0%BD%D0%B3">статьи в википедии</a>. Скажем только, что в дальнейшем мы будем использовать <a href="http://snowball.tartarus.org/">стеммер Snowball</a>, а точнее <a href="http://www.nltk.org/_modules/nltk/stem/snowball.html">его реализацию в NLTK</a>.</p>
+
+<p>Имея в руках стеммер, можно использовать его для преобразования каждого слова каждого документа в его нормальную форму. Тем самым мы, во-первых, значительно уменьшим общее количество слов, а следовательно и вычислительную трудоемкость, а во-вторых, упростим дальнейшую интерпретацию результатов.	</p>
+
+<h2 id="tf-idf">TF-IDF</h2>
+<p>TF-IDF — (Term Frequency - Inverse Document Frequency) методика оценки важности слова в документе. Она опирается на два основных предположения</p>
+
+<ol>
+  <li>Частота появления слова в документе пропорциональна его важности в этом документе.</li>
+  <li>Число документов, в котором встречается слово, обратно пропорционально его важности.</li>
+</ol>
+
+<p>Первое предположение вполне логично, а если поразмыслить то и с обоснованием второго не возникнет проблем: возьмем, например, “и” или “а” — они наверняка встретятся в большинстве документов, но на вряд ли привносят что-то в их тематику. Другой пример: возьмем текст новостей, посвященных гражданину N. Естественно, 99.9% из них будут содержать его фамилию в той или иной форме, которая в то же время, будет совершенно бесполезна для определение их темы (в контексте общей темы, посвященной этому гражданину).</p>
+
+<p>Эти два предположения TFIDF учитывает с помощью функций  <script type="math/tex">\mathrm{tf}</script> и <script type="math/tex">\mathrm{idf}</script> соответственно. Задаются они следующим образом</p>
+
+<ul>
+  <li><script type="math/tex">\mathrm{tf}(w, d) = n_{w, d}</script> — число вхождений слова <script type="math/tex">w</script> в документ <script type="math/tex">d</script>;</li>
+  <li><script type="math/tex">\mathrm{idf}(w) = \log \frac{N}{\lvert \{d \; : \; n_{w, d} > 0\} \rvert }</script> — логарифм обратной доли документов, содержащих слово <script type="math/tex">w</script>.  </li>
+</ul>
+
+<p>Итоговая же оценка важности слова <script type="math/tex">w</script> для документа <script type="math/tex">d</script> описывается функцией <script type="math/tex">\mathrm{tfidf}</script>: </p>
+
+<script type="math/tex; mode=display">
+\mathrm{tfidf}(w, d) = \mathrm{tf}(w, d) * \mathrm{idf}(w)
+</script>
+
+<p>Таким образом, заменяя <script type="math/tex">\mathbf{X} = (n_{d,w})_{d,w}</script> на матрицу <script type="math/tex">\mathbf{X}_{tfidf} = (\mathrm{tfidf}(w, d))_{d, w}</script>, мы понижаем важность слов, встречающихся в большинстве документов и повышаем ее у слов встречающихся в относительно небольшом подмножестве документов.</p>
+
+<h2 id="section-3">Сингулярное разложение</h2>
+
+<p>Потихоньку мы подбираемся к самому интересному. Как же найти ответы на поставленные вопросы?
+Напомним, на какие вопросы должна ответить искомая тематическая модель коллекции документов.</p>
+
+<ol>
+  <li>Какие слова образуют каждую из тем?</li>
+  <li>К каким темам относится каждый из документов?</li>
+</ol>
+
+<p>Наша задача — численно ответить на эти вопросы на том же языке, на котором описана матрица документов-слов <script type="math/tex">\mathbf{X}</script>. </p>
+
+<p>Рассмотрим конкретную тему <script type="math/tex">t</script> и представи ответы на вопросы выше (пока гипотетически) в векторном виде:</p>
+
+<ol>
+  <li>Вектор <script type="math/tex">u_t \in \mathrm{R}^{N }</script>, <script type="math/tex">d</script>-й элемент которого <script type="math/tex">u_t^{(d)}</script> символизирует близость темы <script type="math/tex">t</script> документу <script type="math/tex">d</script>.</li>
+  <li>Вектор <script type="math/tex">v_t \in \mathrm{R}^{M }</script>, <script type="math/tex">w</script>-й элемент которого <script type="math/tex">v_t^{(w)}</script> символизирует важность слова <script type="math/tex">w</script> для темы <script type="math/tex">t</script>. </li>
+</ol>
+
+<p>Заметим, что если слово <script type="math/tex">w</script> важно для темы <script type="math/tex">t</script> (<script type="math/tex">v_t^{(w)}</script> велико), а тема <script type="math/tex">t</script> близка документу <script type="math/tex">d</script> (<script type="math/tex">u_t^{(d)}</script> велико), то велико будет и их произведение: <script type="math/tex">u_t^{(d)} v_t^{(w)}</script>. Если же тема <script type="math/tex">t</script> близка документу <script type="math/tex">d</script>, а слово <script type="math/tex">w</script>, напротив, не играет роли в теме <script type="math/tex">t</script> (<script type="math/tex">v_t^{(w)} \sim 0</script>), то и их произведение будет близко к нулю: <script type="math/tex">u_t^{(d)} v_t^{(w)}\sim 0</script>.   Более того, если перемножить два этих вектора, то получившаяся матрица <script type="math/tex">]mathbf{X}_t = u_t v_t^T</script> будет ни чем иным как корпус с единственной темой — темой <script type="math/tex">t</script>. </p>
+
+<p>Развивая эту идею, задачу построения тематической модели можно сформулировать следующим образом: </p>
+
+<blockquote>
+  <p>Необходимо найти комбинацию тем $t=1..K$ и соответствующих им векторов <script type="math/tex">u_t</script> и <script type="math/tex">v_t</script>, таких что их комбинация наилучшим образом описывает исходный корпус <script type="math/tex">\mathbf{X}</script>. </p>
+</blockquote>
+
+<p>“Наилучшим образом” будем понимать в смысле наименьшего квадратичного отклонения:</p>
+
+<script type="math/tex; mode=display">
+	\lvert\lvert X - \sum\limits_{t=1}^K \mathbf{X}_t^\top \rvert\rvert_2 
+	 =
+	\lvert\lvert X - \sum\limits_{t=1}^K u_t v_t^\top \rvert\rvert_2 
+	\longrightarrow 
+	\min\limits_{\{u_t, v_t\}_{t=1}^K}.
+</script>
+
+<p>Здесь на сцену выходит <em>сингулярное разложение</em> (<em>singular value decomposition</em>, <em>SVD</em>), решающее схожую задачу. Оно заключается в представлении вещественной матрицы <script type="math/tex">\mathbf{X} \in \mathrm{R}^{N\times M}</script>, <script type="math/tex">N > M</script> в виде:</p>
+
+<script type="math/tex; mode=display">
+\mathbf{X} = \mathbf{U} \mathbf{S} \mathbf{V}^\top = \sum_{t=1}^{M} s_t u_t v_t^\top,
+</script>
+
+<p>где <script type="math/tex">\mathbf{U} \in \mathrm{R}^{N\times M}</script>, <script type="math/tex">\mathbf{V} \in \mathrm{R}^{M\times M}</script> — ортогональные матрицы, состоящие из левых (<script type="math/tex">u_t</script>) и правых (<script type="math/tex">v_t</script>) сингулярных векторов, а <script type="math/tex">\mathbf{S} \in \mathrm{R}^{M\times M}</script> — диагональная матрица, на главной диагонали которой находятся сингулярные числа (<script type="math/tex">s_k</script>).</p>
+
+<p>Сингулярное разложение — одно из важнейших матричных разложений, применяемое во множестве как теоретических, так и практических областей: нахождении псевдообратной матрицы, решении линейных уравнений, снижении размерности, анализе временных рядов, рекомендательных системах и др. В качестве отправной точки можно обратиться к <a href="https://ru.wikipedia.org/wiki/%D0%A1%D0%B8%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D0%BE%D0%B5_%D1%80%D0%B0%D0%B7%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5">википедии</a> или довольно наглядной статье на <a href="http://www.ams.org/samplings/feature-column/fcarc-svd">ams.org</a>.</p>
+
+<p>SVD обладает множеством полезных свойтсва. В контексте нашей задачи определения тем в корпусе нам интересны следующие:</p>
+
+<ol>
+  <li>Все вектора <script type="math/tex">\{v_t\}</script> имеют длину равную единице и ортогональны друг другу — значит исключена возможность того, что все темы будут друг на друга похожи — в пространстве слов они ортогональны друг другу.</li>
+  <li>Сингулярные числа <script type="math/tex">s_t</script> расположены на диагонали матрицы <script type="math/tex">S</script> по убыванию — сперва идут темы обладающие наибольшим вкладом в коллекцию.</li>
+  <li>Сингулярные вектора определены с точность до знака: одновременно домножив <script type="math/tex">u_t</script> и <script type="math/tex">v_t</script> на -1 ничего не изменится — значит у каждой темы есть фактически два полюса: один описывается словами (элементами <script type="math/tex">\{v_t\}</script>) с наибольшим положительным весом, а другой — с наибольшим отрицательным.</li>
+  <li>Если рассмотреть <em>сокращенное сингулярное разложение</em> (<em>truncated SVD</em>): <script type="math/tex">X_K = \sum_{t=1}^{K} s_t u_t v_t^\top </script>, то это будет <em>наилучшим приближением матрицы <script type="math/tex">X</script> ранга <script type="math/tex">K</script></em> (в терминах <script type="math/tex">\lvert\lvert.\rvert\rvert_2</script> нормы). Это означает, что любой другой набор из <script type="math/tex">K</script> тем, представленный в виде троек <script type="math/tex">\{u_t, s_t, v_t\}_1^K</script> будет хуже описывать наш исходный корпус.</li>
+  <li>Так SVD разложение детерменировано, а значения <script type="math/tex">s_t</script> упорядочены, то выбор параметра <script type="math/tex">K</script> не влияет на сами темы — если выбрать <script type="math/tex">K=3</script> и <script type="math/tex">K=100</script>, то первые три темы в обоих случаях будут одинаковы.</li>
+</ol>
+
+<p>Довольно-таки неплохо! Учитывая, что это достается нам совершенно бесплатно :) </p>
+
+<p>Подытожим. Имея матрицу <script type="math/tex">\mathbf{X}</script>, все что нам нужно сделать для получения его тематической модели — это выбрать число <script type="math/tex">% &lt;![CDATA[
+K < N, M %]]&gt;</script> и воспользоваться truncated SVD:</p>
+
+<script type="math/tex; mode=display">
+	U=\mathbf{U}_K, \mathbf{S}_K, \mathbf{V}^\top_K = \mathrm{svd}(\mathbf{X}, K)
+</script>
+
+<p>и тогда каждую тройку <script type="math/tex">u_k, s_k, v_k</script> можно будет интерпретировать следующим образом:</p>
+
+<ul>
+  <li><script type="math/tex">u_t \in \mathrm{R}^{N}</script> — вектор соответствия темы <script type="math/tex">t</script> каждому из документов <script type="math/tex">d=1..N</script>, чем больше <script type="math/tex">u_t^{(d)}</script> — тем ближе документ <script type="math/tex">d</script> к теме <script type="math/tex">t</script>;</li>
+  <li><script type="math/tex">v_t \in \mathrm{R}^{M}</script> — вектор соответствия слов <script type="math/tex">w=1..M</script> теме <script type="math/tex">t</script>, чем больше <script type="math/tex">v_t^{(w)}</script> — тем важнее слово <script type="math/tex">w</script> в теме <script type="math/tex">t</script>;</li>
+  <li><script type="math/tex">s_t \in \mathrm{R}</script> — относительный вес темы <script type="math/tex">t</script> в корпусе.</li>
+</ul>
+
+<p>Для наглядности мы проиллюстрировали сокращенное сингулярное разложение матрицы документ-слово (крестиками обозначены ненулевые значения).</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_SVD_vis.svg" width="768" height="576" title="SVD матрицы документ-слово" ></p>
+
+<p>Стоит отметить, что согласно пятому свойству, “больше” стоит понимать в абсолютном смысле, ведть большое отрицательно число можно легко превратить в большое положительно, домножив соответствующие вектора <script type="math/tex">u_t, v_t</script> на -1.</p>
+
+<h2 id="section-4">Латентный Семантический Анализ</h2>
+
+<p>На этом с математикой покончено! Осталось собрать элементы мозайки воедино. </p>
+
+<p>Латентный семантический анализ фактически является комбинацией описанных ваше методов. Кратко алгоритм можно описать следющим образом.</p>
+
+<ol>
+  <li>На входе LSA поступает коллекция текстовых документов.</li>
+  <li>Текстовые документы переводятся в матрицу частот слов в документах <script type="math/tex">X</script> посредством векторной модели.</li>
+  <li>Элементы матрицы <script type="math/tex">\mathbf{X}</script> взвешиваются посредством TF-IDF: <script type="math/tex">\mathbf{X}_{tfidf} = \mathrm{tfidf}(\mathbf{X})</script>.</li>
+  <li>К взвешенной матрице применяется SVD: <script type="math/tex">\mathbf{U}_K, \mathbf{S}_K, \mathbf{V}^\top_K = \mathrm{svd}(\mathbf{X}_{tfidf}, K)</script>.</li>
+  <li>Полученные тройки <script type="math/tex">u_t, s_t, v_t</script> используются для интерпретаций тем <script type="math/tex">t=1..K</script>.</li>
+</ol>
+
+<p>Как видно, среди этапов алгоритма отсутствует стемминг. Тем не менее, эта операция является де-факто стандартом в задачах тематического моделирования и его мы добавили по собственной инициативе в следующем разделе (можно рассмотреть его в качестве шага алгоритма под номером <script type="math/tex">\frac{1}{2}</script>).</p>
+
+<p>На этом с теорией наконец-то покончено, перейдем к практике!</p>
+
+<h1 id="section-5">Часть 2. Практика</h1>
+
+<p>С чего начать? С получения данных, конечно! Нам нужен текст серии “Песнь Льда и Пламени”, желательно всех вышедших книг. Есть различные схемы, в том числе черные и серые, но есть и белые. Мы воспользовались совершенно белым предложением интернет-магазина litres.ru (на правах рекламы :)), где можно приобрести всю серию по <a href="http://www.litres.ru/serii-knig/pesn-lda-i-ognya/elektronnie-knigi/">довольно привлекательной цене</a> — после этого все книги будут доступны в множестве форматов, в том числе и предпочтительным для нас txt.</p>
+
+<p>Когда книги скачены, можно перейти первому этапу — предобработке данных.</p>
+
+<h2 id="section-6">Предобработка данных</h2>
+
+<p>Сначала, разберем текст книг по главам и посмотрим на их размер по числу слов.</p>
+
+<p>На примере первой книги “Игре Престолов”:</p>
+
+<p><code>text Игра_Престолов
+0. Пролог 2925
+1. Бран 2295
+2. Кейтилин 1643
+3. Дейенерис 3284
+4. Эддард 3068
+...
+68. Дейенерис 3273
+69. Тирион 2738
+70. Джон 3909
+71. Кейтилин 3641
+72. Дейенерис 2738
+</code></p>
+
+<p>и последней на данный момент книге серии — 2-го тома “Танца с Драконами”:</p>
+
+<p><code>text Танец_с_Драконами_2
+0. Принц Винтерфелла 4564
+1. Страж 3891
+2. Джон 2532
+3. Тирион 3033
+4. Переметчивый 3441
+...
+31. Укротитель драконов 2584
+32. Джон 3897
+33. Десница королевы 4106
+34. Дейенерис 3775
+35. Эпилог 4518
+</code></p>
+
+<p>Судя по списку глав все верно — текст мы распарсили правильно, двигаемся дальше. Далее нам нужна коллекция документов. В данном случае документы напрашиваются сами собой: возьмем главы каждой книги. Итого у нас получится 345 документов — не так уже и много, но документы внушительных размеров.</p>
+
+<p>Теперь все готово: мы преобразовали исходные тексты в “документы” — объединенные блоки текста. Можно применять LSA.</p>
+
+<h2 id="section-7">Перевод в векторную модель</h2>
+<p>Как мы помним, первый этап LSA — перевод документов в векторный вид. 
+Начнем с разбиения наших документов на слова и последующий их стемминг</p>
+
+<p>&#8220;`python Разбиение документов на слова
+import re
+non_letter_rgxp = re.compile(u’[^а-яА-Я ]’) </p>
+
+<p>remove_non_letters = lambda doc: non_letter_rgxp.sub(‘ ‘, doc.lower()) </p>
+
+<p>import nltk
+from nltk.stem.snowball import SnowballStemmer</p>
+
+<p>stemmer = SnowballStemmer(“russian”)</p>
+
+<p>def stem(tokens):
+    return (stemmer.stem(t) for t in tokens)</p>
+
+<p>docs_tokens = [
+    list(filter(lambda w: w, stem(remove_non_letters(doc.lower()).split(‘ ‘))))
+    for doc in docs
+]
+&#8220;`</p>
+
+<p>Теперь, посчитаем частоту слов</p>
+
+<p><code>python Подсчет частоты слов
+import collections
+token_frequency_dict = collections.defaultdict(lambda: 0)
+for tokens in docs_tokens:
+    for t in tokens:
+        token_frequency_dict[t] += 1
+</code></p>
+
+<p>Взглянем на наиболее часто встречающиеся слова</p>
+
+<p><code>text Самые частые слова
+400392 и
+271847 он
+261481 не
+239817 в
+187947 на
+134724 с
+129038 что
+</code></p>
+
+<p>.., и на самые редкие</p>
+
+<p><code>text Самые редкие слова
+3 линнистер
+3 близя
+3 персонаж
+3 нервнич
+3 свежеоперен
+3 прожиг
+3 долженствова
+</code></p>
+
+<p>Как видно, среди часто встречающихся слов довольно много бессмысленных “коротышек”: “а”, “и”, “не” и т.п. От редких же слов больше вреда, чем пользы: они раздувают словарь слов (а значит и размерность будущей матрицы <script type="math/tex">X</script>, делая вычисления более сложными), а в определении темы вряд ли помогут, так как встречаются в считанном числе документов. </p>
+
+<p>Решено! Отфильтруем самые редкие слова, а так же слова маленькой длины:</p>
+
+<p><code>python Фильтрация корпуса по словам
+docs_tokens_filtered = [
+    filter(lambda t: token_frequency_dict[t] &gt; 5 and len(t) &gt; 2, tokens) 
+    for tokens in docs_tokens
+]
+</code></p>
+
+<p>Остается перевести наши разбитые на слова и отфильтрованные документы в векторный вид. Следующий блок кода делает именно это.</p>
+
+<p><figure class='code'><figcaption><span>Перевод текстовых документов в матрицу частот документ-слов </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">itertools</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">sp</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">iterators_iterator</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">iterators_iterator</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">all_tokens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">flatten</span><span class="p">(</span><span class="n">paragraphs_tokens_filtered</span><span class="p">))</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">id_token_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">all_tokens</span><span class="p">))</span>
+</span><span class='line'><span class="n">token_id_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(((</span><span class="n">v</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">id_token_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">doc2vec</span><span class="p">(</span><span class="n">doc_tokens</span><span class="p">,</span> <span class="n">token_id_dict</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">id_cnt_dict</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">((</span><span class="n">token_id_dict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">doc_tokens</span><span class="p">))</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">id_cnt_dict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">docs2csr_matrix</span><span class="p">(</span><span class="n">docs_tokens</span><span class="p">,</span> <span class="n">token_id_dict</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">docs_vecs</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc2vec</span><span class="p">(</span><span class="n">doc_tokens</span><span class="p">,</span> <span class="n">token_id_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_tokens</span> <span class="ow">in</span> <span class="n">docs_tokens</span><span class="p">]</span>
+</span><span class='line'>    <span class="n">data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">((((</span><span class="n">id_cnt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">id_cnt</span> <span class="ow">in</span> <span class="n">doc_vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_vec</span> <span class="ow">in</span> <span class="n">docs_vecs</span><span class="p">))))</span>
+</span><span class='line'>    <span class="n">row_ind</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">((((</span><span class="n">doc_ind</span> <span class="k">for</span> <span class="n">id_cnt</span> <span class="ow">in</span> <span class="n">doc_vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_ind</span><span class="p">,</span> <span class="n">doc_vec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">docs_vecs</span><span class="p">)))))</span>
+</span><span class='line'>    <span class="n">col_ind</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">((((</span><span class="n">id_cnt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">id_cnt</span> <span class="ow">in</span> <span class="n">doc_vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_vec</span> <span class="ow">in</span> <span class="n">docs_vecs</span><span class="p">))))</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">row_ind</span><span class="p">,</span> <span class="n">col_ind</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">X</span> <span class="o">=</span> <span class="n">docs2csr_matrix</span><span class="p">(</span><span class="n">docs_tokens_filtered</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>Ура, мы в векторе! Получилась матрица 345 на 11467, идем дальше.</p>
+
+<h2 id="tfidf">TFIDF</h2>
+
+<p>Следующим по списку стоит TFIDF. Воспользуемся собственной реализацией.</p>
+
+<p><figure class='code'><figcaption><span>TFIDF </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">tfidf</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">idf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">((</span><span class="n">X</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span>
+</span><span class='line'>    <span class="n">idf</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">idf</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">diags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">X</span> <span class="o">*</span> <span class="n">idf</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">X_tfidf</span> <span class="o">=</span> <span class="n">tfidf</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h2 id="svd">Применение SVD</h2>
+<p>На этот раз свой велосипед писать не будем, воспользуемся готовой реализацией для разряженных матриц (а нас как-раз такая) из пакета <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.svds.html">scipy</a>.</p>
+
+<p><figure class='code'><figcaption><span>SVD </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">VT</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svds</span><span class="p">(</span><span class="n">X_tfidf</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>Вот и все, готово! Давайте посмотрим, какие темы нашел LSA.</p>
+
+<h1 id="section-8">Часть 3. Результаты</h1>
+
+<p>Сперва взглянем на сингулярные числа <script type="math/tex">s_t</script> соответствующую вкладу каждой тему в коллекцию</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_singular_values_histogram.png" width="768" height="576"></p>
+
+<p>Первое собственное число стоит одинокой башней. Неужели есть какая-та настолько “выдающаяся” тема?<br />
+Как мы говорили выше, элементы вектора <script type="math/tex">v_t</script> соответствуют вкладу соответствующих слов в тему <script type="math/tex">t</script>. Посмотрим же на самые большие по модулю элементы вектора <script type="math/tex">v_0</script>. Для наглядности мы изобразили наиболее важные слова вместе с соответствующим им значением <script type="math/tex">v_0^{(w)}</script>:</p>
+
+<p><code>text Основные слова темы 0
++0.30*был +0.24*лорд +0.21*сказа +0.19*сир +0.15*джон +0.15*тирион +0.14*рук +0.12*корол +0.11*больш +0.10*нег +0.10*говор +0.10*нет +0.10*глаз +0.09*брат +0.09*джейм +0.09*над +0.09*под +0.09*меч +0.08*черн +0.08*сэм
+</code></p>
+
+<p>Кажется удивительным, что все элементы одного знака, ни одного отрицательного! Получается такая тема, которой соответствуют все слова без исключения. Но если подумать, то ничего удивительного в этом нет. Вспомним базовую статистику. Если взять множество чисел, какое число будет минимизировать сумму квадратов расстояний от них? Правильно — их среднее. И здесь та же история: фактически, вектор <script type="math/tex">v_0</script> — это среднее по строкам матрицы <script type="math/tex">X_{tfidf}</script>, то есть вектор средних весов слов в нашем корпусе. По этой же причине у этой темы и столь выдаяющаесе собственной число. Исходя из этого, первая собственная тройка с точки зрения определения темы нам мало полезна, так что отбросим ее и вновь взглянем на график собственных чисел.</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_singular_values_histogram_without_1st.png" width="768" height="576"></p>
+
+<p>Теперь сильно выделяющихся тем нет. Далее пойдем по порядку, рассмотрим слова, образующие темы со 1-й по 7-ю (рассмотренную “среднюю” тему считаем за нулевую).</p>
+
+<h2 id="section-9">Темы по документам</h2>
+
+<p>Собственно, что мы ожидаем увидеть, рассматривая главы в качестве документов? Очевидно, что никакой конкретики здесь получить не удастся — главы большие и модель мешка слов стирает всю конкретику, перемешивая в кучу всех героев, события и прочее. Поэтому, наиболее вероятный результат — это что-то, что больше всего различает главы между собой: действующие лица, персонажи, локации. </p>
+
+<p>Для наглядности мы будем визуализировать наиболее важные слова каждой темы облаком тэгов, где размер слова пропорционален его важности. При этом, для каждой темы облако будет два: одно для слов с положительным кладом (его будем рисовать зеленым цветом) и одно для слов с отрицательным (соответственно, красным). А для некоторых еще посмотрим на соответствующие ей документы.</p>
+
+<h3 id="vs--">Тема 1. За Стеной vs Королевская Гавань</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_1.png" width="768" height="576" title="Основные слова темы 1" ></p>
+
+<p>Ого! Почти все самые важные слова темы, что с отрицательные, что положительные — это имена тех или иных персонажей. Похоже наша догадка по поводу того, что лежит в основе различия документов оказалась не далека от истины :). Попробуем проинтерпретировать как “положительную”, так и “отрицательную” часть темы.</p>
+
+<p>Как видно, “положительная” часть посвящена преимущественно Джону и Сэму (“джон” и “сэм”  — самые ярко выраженные слова темы), а так же их похождениям по обе стороны от стены: об этом говорят такие слова, как “одичал”, “крастер”, “лилл”, “черн” и прочие. Так же сюда затесалось немного “ходора” и “брана”, видимо из-за особенностей местности — и одичалые и ходор с браном большую часть времени провели за стеной, а значит и слова описывающие местность у них совпадают (например, “снег”, или “волк”) :). </p>
+
+<p>“Обратная” же тема, судя по словам, соответствует Тириону, а так же другим событиям, относящимся к королевской гавани — этим можно объяснить столь высокий вклад слова “сир”, а так же других ее обитателей: “петир”, “джейм”, “серсе”, “джофф” и т.п.</p>
+
+<p>Соответствующие этой теме главы лишь подтверждают наши выводы:</p>
+
+<p><code>text Документы темы 1
+Книга 4, Глава 6, Сэмвел
+Книга 3, Глава 20, Сэмвел
+Книга 2, Глава 24, Джон
+Книга 3, Глава 35, Сэмвел
+Книга 5, Глава 8, Джон
+Книга 1, Глава 53, Джон
+Книга 4, Глава 27, Сэмвел
+Книга 3, Глава 48, Сэмвел
+Книга 3, Глава 17, Джон
+Книга 3, Глава 77, Сэмвел
+Книга 1, Глава 27, Джон
+Книга 3, Глава 57, Джон
+</code></p>
+
+<p><code>text Документы темы 1 "наоборот"
+Книга 3, Глава 62, Тирион
+Книга 1, Глава 63, Тирион
+Книга 3, Глава 68, Тирион
+Книга 3, Глава 21, Тирион
+Книга 2, Глава 42, Тирион
+Книга 1, Глава 39, Тирион
+Книга 2, Глава 4, Тирион
+Книга 1, Глава 32, Тирион
+Книга 4, Глава 28, Джейме
+Книга 5, Глава 28, Тирион
+Книга 3, Глава 69, Джейме
+Книга 4, Глава 25, Серсея
+Книга 3, Глава 6, Тирион
+</code></p>
+
+<h3 id="vs---1">Тема 2. Бес vs Луковый рыцарь</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_2.png" width="768" height="576" title="Основные слова темы 2" ></p>
+
+<p>Здесь “позитивная” тема похоже на тему Тириона. Сюда же “затесался” Джон: по сюжету Тирион и Джон Сноу пересекались в 1-ой книге, в Винтерфелле, а так же по дороге и на самой Стене. 
+Но, если взглянуть на cоответствующие документы, то помимо 1-ой главы можно увидеть, например и 5-ую. Как объяснить 5-ую книгу серии? Дело в том, что Джон в книге не один: в 5-ой книге Тирион плыл с Джоном Когннингтоном по прозвищу “Грифф”. В пользу этой версии говорит и слово “грифф”.</p>
+
+<p>Альтернативная тема по большей части посвящена Давосу. Здесь же сильны и признаки Дейнерис Бурерожденной: “ден”, “кхал”, “дракон”, “дрог”. Если вглядется, то можно увидеть всего по немножку: “бриен”, “ходор”, “бран”, “виктарион” и прочие. Одной из причин связи линии Давоса и линии Дейнерис может быть “дракон”: Драконий Камень, где расположен замок Станниса и настоящие драконы Дени. Тем не менее, основной в этой теме — Давос, что и подтверждают основные документы ниже. </p>
+
+<p><code>text Документы темы 2
+Книга 1, Глава 63, Тирион
+Книга 3, Глава 62, Тирион
+Книга 1, Глава 39, Тирион
+Книга 3, Глава 68, Тирион
+Книга 1, Глава 32, Тирион
+Книга 1, Глава 22, Тирион
+Книга 5, Глава 2, Тирион
+Книга 2, Глава 4, Тирион
+Книга 5, Глава 23, Тирион
+Книга 5, Глава 28, Тирион
+</code></p>
+
+<p><code>text Документы темы 2 "наоборот"
+Книга 2, Глава 43, Давос
+Книга 2, Глава 59, Давос
+Книга 2, Глава 11, Давос
+Книга 3, Глава 12, Давос
+Книга 3, Глава 38, Давос
+Книга 3, Глава 56, Давос
+Книга 2, Глава 1, Пролог
+Книга 3, Глава 65, Давос
+Книга 3, Глава 27, Давос
+Книга 5, Глава 16, Давос
+Книга 5, Глава 10, Давос
+</code></p>
+
+<h3 id="section-10">Тема 3. Узкое море</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_3.png" width="768" height="576" title="Основные слова темы 3" ></p>
+
+<p>Здесь с положительной темой никаких сомнений нет: сплошная Дейнерис. Отрицательная тема интересней — основной здесь выступает Кейтелин Старк, но присутствуют и “давос”, “робб”, “санса”, “алейн”, “джейм”, “джон”, “станнис” и т.д. И если присутствие большинства из них вполне объяснимо, то персонажи линии Станниса (“давос”, “станнис”, “мелисандр”) объяснить сложно. Получается в некотором смысле “глобальная” тема, охватывающая Старков, Фреев, Ланнистеров, Талли, Баратеонов, Грейджоев, Болтонов — почти всех обитателей Вестероса. </p>
+
+<p>Это наталкивает на мысль, что эта тема — совего рода Узкое море — разделяет миры Вестероса и Эссоса. В пользу этого говорят и такие слова “положительной” части, как: “квентин”, “астапор”, “миэрин”. В этом смысле, забавно, что “положительная” часть так же включает слово “вестерос” — видимо на востоке от Узкого моря о вестеросе вспоминают чаще, чем в нем самом :)</p>
+
+<p><code>text Документы темы 3
+Книга 1, Глава 65, Дейенерис
+Книга 3, Глава 25, Дейенерис
+Книга 3, Глава 73, Дейенерис
+Книга 3, Глава 44, Дейенерис
+Книга 3, Глава 59, Дейенерис
+Книга 5, Глава 3, Дейенерис
+Книга 5, Глава 17, Дейенерис
+Книга 1, Глава 47, Дейенерис
+Книга 1, Глава 24, Дейенерис
+Книга 3, Глава 10, Дейенерис
+</code></p>
+
+<p><code>text Документы темы 3 "наоборот"
+Книга 4, Глава 42, Алейна
+Книга 4, Глава 24, Алейна
+Книга 4, Глава 11, Санса
+Книга 2, Глава 43, Давос
+Книга 1, Глава 60, Кейтилин
+Книга 1, Глава 35, Кейтилин
+Книга 3, Глава 51, Кейтилин
+Книга 2, Глава 40, Кейтилин
+Книга 1, Глава 72, Кейтилин
+Книга 3, Глава 21, Тирион
+Документы 
+</code></p>
+
+<h3 id="vs---">Тема 4. Контрабандист vs Ходор и Бран</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_4.png" width="768" height="576" title="Основные слова темы 4" ></p>
+
+<p>“Положительная” тема здесь — еще одна тема Давоса. Однако, здесь помимо Давоса выделяются “сэм” и “тирион”. Если с первым все объяснимо — Станнис довольно долго гостил на Стене у ночного дозора, то с Тирионом найти объяснение нелегко. Возможно, здесь роль сыграла битва при Черноводной: благо что “черноводн” среди списка слов встречается.</p>
+
+<p>“Отрицательная” тема же здесь проста — практически все в ней относится к Ходору с Браном. </p>
+
+<p>Список документов в данном случае ничего интересно не привноситю </p>
+
+<p><code>text Документы темы 4
+Книга 2, Глава 43, Давос
+Книга 2, Глава 59, Давос
+Книга 2, Глава 11, Давос
+Книга 3, Глава 12, Давос
+Книга 3, Глава 38, Давос
+Книга 3, Глава 56, Давос
+Книга 3, Глава 65, Давос
+Книга 3, Глава 27, Давос
+Книга 5, Глава 16, Давос
+Книга 2, Глава 1, Пролог
+Книга 5, Глава 10, Давос
+Книга 3, Глава 7, Давос
+</code></p>
+
+<p><code>text Документы темы 4 "наоборот"
+Книга 3, Глава 58, Бран
+Книга 1, Глава 38, Бран
+Книга 1, Глава 54, Бран
+Книга 2, Глава 17, Бран
+Книга 1, Глава 25, Бран
+Книга 5, Глава 35, Бран
+Книга 3, Глава 42, Бран
+Книга 2, Глава 70, Бран
+Книга 3, Глава 11, Бран
+Книга 5, Глава 14, Бран
+</code></p>
+
+<h3 id="vs----1">Тема 5. Не совсем Бран vs Джейм и Бриенна</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_5.png" width="768" height="576" title="Основные слова темы 5" ></p>
+
+<p>Здесь “положительная” тема вновь похожа на винегрет: с одной стороны, лидирует “бран”, а с другой по пятам за ним следуют “тирион” и “давос”. И хоть Бран в этой теме явно доминирует (как-никак, первые девять глав темы — главы Брана), объяснить столь большой вес у слов “тирион” и “давос” непросто. Участие Тириона можно обяснить первой книгой, где он сначала пребывает в Винтерфелле, а затем путешествует на стену и там, в том числе, обсуждает Брана с Джоном Сноу. Присутствие Давос совсем загадочно. Единственное, что приходит на ум — все та же битва при Черноводной, тем более что 59-ая глава 2-ой книги посвящена именно ей.</p>
+
+<p>“Отрицательная” тема, опять же, проста: ее документы относятся к Джейме Ланнистеру и Бриенне Тарт c легким оттенком Сансы Старк (Алейны Стоун), что понятно.</p>
+
+<p>Документы этих тем:</p>
+
+<p><code>text Документы темы 5
+Книга 3, Глава 58, Бран
+Книга 1, Глава 25, Бран
+Книга 1, Глава 54, Бран
+Книга 3, Глава 42, Бран
+Книга 1, Глава 38, Бран
+Книга 2, Глава 17, Бран
+Книга 5, Глава 35, Бран
+Книга 2, Глава 70, Бран
+Книга 5, Глава 14, Бран
+Книга 1, Глава 63, Тирион
+Книга 3, Глава 11, Бран
+Книга 2, Глава 59, Давос
+</code></p>
+
+<p><code>text Документы темы 5 "наоборот"
+Книга 4, Глава 5, Бриенна
+Книга 4, Глава 10, Бриенна
+Книга 4, Глава 21, Бриенна
+Книга 4, Глава 28, Джейме
+Книга 4, Глава 15, Бриенна
+Книга 4, Глава 42, Алейна
+Книга 4, Глава 43, Бриенна
+Книга 3, Глава 46, Джейме
+Книга 3, Глава 69, Джейме
+Книга 4, Глава 34, Джейме
+</code></p>
+
+<h3 id="vs---2">Тема 6. Сэм Тарли vs Джон Сноу</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_6.png" width="768" height="576" title="Основные слова темы 6" ></p>
+
+<p>Эта тема довольно интересна: в отличие от предыдущих здесь Сэм и Джон встречаются не вместе, а напротив, противопоставляются друг другу! Так, документы “положительной” относятся к похождениям и мыслям Сэма (и чуточку Брана), а “отрицательная” подтема полностью относится к Джону Сноу. </p>
+
+<p><code>text Документы темы 6
+Книга 3, Глава 20, Сэмвел
+Книга 4, Глава 27, Сэмвел
+Книга 3, Глава 48, Сэмвел
+Книга 3, Глава 35, Сэмвел
+Книга 4, Глава 6, Сэмвел
+Книга 4, Глава 36, Сэмвел
+Книга 4, Глава 46, Сэмвел
+Книга 4, Глава 16, Сэмвел
+Книга 3, Глава 58, Бран
+Книга 3, Глава 77, Сэмвел
+</code></p>
+
+<p><code>text Документы темы 6 "наоборот"
+Книга 3, Глава 17, Джон
+Книга 3, Глава 75, Джон
+Книга 3, Глава 57, Джон
+Книга 3, Глава 43, Джон
+Книга 6, Глава 17, Джон
+Книга 6, Глава 22, Джон
+Книга 3, Глава 9, Джон
+Книга 1, Глава 20, Джон
+Книга 3, Глава 71, Джон
+Книга 3, Глава 66, Джон
+Книга 3, Глава 28, Джон
+</code></p>
+
+<h3 id="vs----2">Тема 7. Петир и Санса vs Джейме и Бриенна</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_7.png" width="768" height="576" title="Основные слова темы 7" ></p>
+
+<p>Эта тема интерпретируется так же легко, как и предыдущая. “Положительная” часть относится к главам главам Сансы Старк (Алены Стоун) и Петира Бейлиша — к этому и “лиза” и “роберт” и “нестор”.
+“Отрицательная” же — еще одна относящаяся к Джейме и Бриенне, но на этот раз без примеси Сансы, Сэма и прочих.</p>
+
+<p><code>text Документы темы 7
+Книга 4, Глава 42, Алейна
+Книга 4, Глава 24, Алейна
+Книга 4, Глава 11, Санса
+Книга 3, Глава 70, Санса
+Книга 3, Глава 82, Санса
+Книга 1, Глава 16, Санса
+Книга 3, Глава 8, Санса
+Книга 1, Глава 52, Санса
+Книга 3, Глава 30, Санса
+Книга 1, Глава 35, Кейтилин
+</code></p>
+
+<p><code>text Документы темы 7 "наоборот"
+Книга 4, Глава 21, Бриенна
+Книга 4, Глава 10, Бриенна
+Книга 3, Глава 46, Джейме
+Книга 4, Глава 5, Бриенна
+Книга 4, Глава 28, Джейме
+Книга 3, Глава 3, Джейме
+Книга 4, Глава 43, Бриенна
+Книга 4, Глава 15, Бриенна
+Книга 3, Глава 13, Джейме
+Книга 3, Глава 23, Джейме
+</code></p>
+
+<h1 id="section-11">Заключение</h1>
+
+<p>Мы рассмотрели теорию и практику тематического моделирования, а точнее метода LSA. Более того, мы применили его на тексте книг серии “Песнь Льда и Пламени” и получили очень даже неплохой результат! Действительно: рассмотренные нами темы естественно интерпретируются и довольно-таки неплохо описывают взаимодействия персонажей игры престолов. Еще более удивительно, что имена персонажей оказываются наиболее важными для определения тем, впрочем возможные причиные этого мы обсудили. </p>
+
+<p>Как же на практике использовать тематическое моделирование? Во-первых, наиболее очевидное применение — для интерпретиации текста. Допустим мы не читали киниги и вообще ничего не слышали про Игру Престолов, тогда применив LSA к исходным текстам книг ПЛиО мы, выделив основные темы, узнали основных персонажей, их взаимосвязь с друг-другом, а так же связанные с ними понятия (например, слова соответствующие местности). Во-вторых, получившееся представление документов в виде векторов в пространстве тем <script type="math/tex">u_{\cdot}^{(d)}</script> можно использовать для дальнейшего анализа в других алгоритмах. Например, для решения более сложных задач машинного обучения: кластеризации документов, их классификации и т.д.</p>
+
+<p>Стоит отметить, что  LSA является одним из самых базовых методов тематического моделирования. Среди его недостатков можно отметить следующие</p>
+
+<ol>
+  <li>Сложность интерпретации полюсов тем. Наличие “отрицательного” и “положительного” полюса у каждой темы контринтуитивно — пользователю приходится либо интерпретировать тему как набор свойственных и <strong>не</strong> свойственных теме слов, либо рассматривать одну тему LSA как две темы (так делали и мы).</li>
+  <li>Сложность интерпретации ненормированных значений. <script type="math/tex">u_t^{(d)}</script> и <script type="math/tex">v_t^{(w)}</script> могут принимать любое значение от <script type="math/tex">-\infty</script> до <script type="math/tex">\infty</script>, тем самым сложно понять, например, какое значение <script type="math/tex">v_t^{(w)}</script> можно назвать “большим”, а какое “маленьким”.</li>
+  <li>Сильные ограничения на формы тем. Темы, которые ищет LSA подчиняняются строгим законам: каждая тема должна описывать корпус <script type="math/tex">\mathbf{X}</script> наилучшим образов в смысле нормы Фробениуса за вычетом предыдущих, темы строго ортогональны друг другу, упорядочены по значению своего вклада, — все это значительно ограничивает ту “форму” тем, которая может быть найдена алгоритмом LSA в исходном пространстве слов. Так, например, если настоящая структура тем в документах имеет вид <a href="http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/24616/versions/10/screenshot.jpg">схожих по размеру кластеров</a>, то LSA не удастся её выявить.</li>
+</ol>
+
+<p>В связи с этим, в последние годы методы тематического моделирования активно развиваются. Так, в 1999 году был предложен метод <a href="https://en.wikipedia.org/wiki/Probabilistic_latent_semantic_analysis">PLSA</a>, которыйй можно рассмотреть как “перевод” LSA на вероятностный язык.  2003 был предложен метод <a href="https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation">LDA</a>, далее развивающий идею <em>вероятностного тематического моделирования</em>. Короче говоря, область не стоит на месте и активно развивается, а новые методы и их развития и/или обобщения появляются регулярно.</p>
+
+<p>Если вас заинтересовал тема тем (прошу прощения за дурной каламбур) в “Песни Льда и Пламени”, то по <a href="https://gist.github.com/Obus/059805567893ba70dc22">ссылке</a> доступны по 20 наиболее важных слов для первых 150 тем. Если же хочется поиграться с темами самостоятельно, то в качестве отправных точек могу посоветовать следующее</p>
+
+<ol>
+  <li><a href="https://github.com/Obus/Topic_Modelling_Game_of_Thrones/blob/master/Song%20of%20Ice%20and%20Fire%20Topic%20Modelling.ipynb">IPython Notebook</a> с кодом для этой статьи и полученными результатами.</li>
+  <li>Python пакет <a href="https://radimrehurek.com/gensim/">gensim</a>, содержащий как вспомогательный инструменты для создания корпуса, реализацию LSA, так и реализации гораздо более сложных, но и интересных методов тематического моделирования</li>
+  <li><a href="http://www.machinelearning.ru/wiki/index.php?title=%D0%A2%D0%B5%D0%BC%D0%B0%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5_%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5">Статья</a> на machinelearning.ru, там же <a href="http://www.machinelearning.ru/wiki/images/2/22/Voron-2013-ptm.pdf">материалы</a> <a href="https://www.google.ru/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=4&amp;cad=rja&amp;uact=8&amp;ved=0CDgQFjADahUKEwjgoJvAuqbIAhWGCiwKHaGtAis&amp;url=http%3A%2F%2Fwww.machinelearning.ru%2Fwiki%2Findex.php%3Ftitle%3D%25D0%2592%25D0%25B5%25D1%2580%25D0%25BE%25D1%258F%25D1%2582%25D0%25BD%25D0%25BE%25D1%2581%25D1%2582%25D0%25BD%25D1%258B%25D0%25B5_%25D1%2582%25D0%25B5%25D0%25BC%25D0%25B0%25D1%2582%25D0%25B8%25D1%2587%25D0%25B5%25D1%2581%25D0%25BA%25D0%25B8%25D0%25B5_%25D0%25BC%25D0%25BE%25D0%25B4%25D0%25B5%25D0%25BB%25D0%25B8_(%25D0%25BA%25D1%2583%25D1%2580%25D1%2581_%25D0%25BB%25D0%25B5%25D0%25BA%25D1%2586%25D0%25B8%25D0%25B9%252C_%25D0%259A.%25D0%2592.%25D0%2592%25D0%25BE%25D1%2580%25D0%25BE%25D0%25BD%25D1%2586%25D0%25BE%25D0%25B2)&amp;usg=AFQjCNHXh1sFBsjj9wVs3W7S5qn7gmoDmA&amp;sig2=G-MlJOF4N2orS105uZcisQ&amp;bvm=bv.104317490,d.bGg">курса по вероятностным тематическим моделям</a>.</li>
+</ol>
+
+<p>Надеюсь, вам было интересно :) В последующих статьях, быть может, мы продолжим тему автоматического анализа текстов Игры Престолов и постараемся вытащить из текстов книг ПЛиО что-нибудь менее тривиальное, чем факт знакомства Джона Сноу и Сэма Тарли. Если вы не прочь прочитать продолжение — смело лайкайте эту статью во всех возможных соцсетях :)</p>
+
+<p>До встречи!</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Многообразие визуализаций]]></title>
@@ -27,7 +731,7 @@
   </style>
 </div>
 
-<p>Визуализация является важной частью Data Science, представляя собой удобный интерфейс между данными и человеком. Но различные ее виды встречаются не только в науке о данных. Чтобы обозначить контекст, в котором существует визуализация <em>данных</em>, я покажу разнообразие жанров визуализации <em>вообще</em>, забираясь в миры естественных наук и даже искусства.</p>
+<p>Визуализация является важной частью Data Science, представляя собой удобный интерфейс между данными и человеком. Но различные ее виды встречаются не только в науке о данных. Чтобы обозначить контекст, в котором существует визуализация <em>данных</em>, я покажу разнообразие жанров визуализации <em>вообще</em>, забираясь в миры естественных наук и даже искусства.    </p>
 
 <p><img src="/images/teaser.png" width="768" height="576" title="Иллюстрации из книги Эрнста Геккеля “Красота форм в морских глубинах”" ></p>
 
@@ -36,7 +740,7 @@
 <p>В пайплайне науки о данных визуализация встречается преимущественно в двух ситуациях: для первичного анализа данных и для представления полученных результатов после окончания работы.</p>
 
 <p>В связи с этим существует условное деление графики на исследовательскую (exploratory) и презентационую (explanatory).
-Первая должна помогать в работе, вторая – нести внятное сообщение.</p>
+Первая должна помогать в работе, вторая – нести внятное сообщение. </p>
 
 <p>Такое деление достаточно грубое и в жизни чаще встречаются промежуточные варианты.
 Для нас важно то, что у этих видов графики различные цели.
@@ -63,7 +767,7 @@
 
 <p>Стоит заметить, что картинки сильно различаются в зависимости от специфики научной области и задачи. Посмотрим на некоторые примеры из различных наук.</p>
 
-<p><strong>Медицина</strong></p>
+<p><strong>Медицина</strong> </p>
 
 <p><img src="/images/Medical.png" title="Снимок УЗИ. Рисунок Леонардо да Винчи. Компьютерная модель сердца" ></p>
 
@@ -71,11 +775,11 @@
 
 <p><img src="/images/Geographic.png" title="Карты: геологическая, географическая и политическая" ></p>
 
-<p><strong>Астрономия</strong></p>
+<p><strong>Астрономия</strong> </p>
 
 <p><img src="/images/Astronomy.png" title="Зарисовки пятен на Солнце. Фотография Вселенной" ></p>
 
-<p><strong>Химия</strong></p>
+<p><strong>Химия</strong> </p>
 
 <p><img src="/images/Chemistry.png" title="Модель молекулы ДНК. Таблица Менделеева" ></p>
 
@@ -83,7 +787,7 @@
 
 <p><img src="/images/Physics.png" title="Симуляция смешивания жидкостей. Использование визуалицации в самолетосторении" ></p>
 
-<p><strong>Математика</strong></p>
+<p><strong>Математика</strong> </p>
 
 <p><img src="/images/Math.png" title="Архимед чертит геометрические фигуры на песке. Компьютерная визуализация аттрактора Лоренца" ></p>
 
@@ -96,7 +800,7 @@
 
 <p>Если до этого мы говорили о естественных науках и чистой математике, то теперь вернемся к тематике нашего блога и обратимся к науке о данных. Для начала рассмотрим примеры визуализаций, создаваемых на этапе исследования данных. Они делаются для персонального использования и нужны в первую очередь для анализа.</p>
 
-<p>Этот этап по английски называется exploratory data analysis, в русскоязычной литературе встречаются термины “описательная статистка” и  “разведочный анализ данных”. Понятие ввел Дж. Тьюки в своей книге “Анализ результатов наблюдений”, в основу которой положен принцип:</p>
+<p>Этот этап по английски называется exploratory data analysis, в русскоязычной литературе встречаются термины “описательная статистка” и  “разведочный анализ данных”. Понятие ввел Дж. Тьюки в своей книге “Анализ результатов наблюдений”, в основу которой положен принцип:    </p>
 
 <blockquote>
   <p>“Важно понять, что́ вы можете делать, прежде чем вы научитесь измерять, насколько хорошо вы это сделали.”</p>
@@ -171,7 +875,7 @@
 
 <p>Диаграмма Флоренс Найтингейл — одна из первых круговых диаграмам. С ее помощью сестра милосердия продемонстрировала, что в британской армии от антисанитарии умирает больше людей, чем от ранений.</p>
 
-<p><img src="/images/Nightingale-mortality.jpg"></p>
+<p><img src="/images/Nightingale-mortality.jpg">	    </p>
 
 <p>Графика этого типа отлично подходит для научной статьи, сайта в интернете или раздаточного материала.</p>
 
@@ -179,18 +883,18 @@
 С помощью интерактива можно группировать и фильтровать данные, рассматривать их в разном масштабе — от общей картины до частностей.
 Много примеров такой графики создано с помощью Javascript библиотеки <a href="http://d3js.org">D3.js</a>. Хорошей иллюстрацией является <a href="http://white-nights.datalaboratory.ru">визуализация марафона “Белые ночи”</a> от Лаборатории данных.</p>
 
-<p><img src="/images/maraphon.png"></p>
+<p><img src="/images/maraphon.png">	    </p>
 
 <p>Cоздающий подобную графику человек должен разбираться не только в данных и предметной области, но и в особенностях восприятия человеком визуальных образов, а еще в человеко-компьютерном взаимодействии.</p>
 
 <p>Распространенным применением аналитической визуализации являются дэшборды — информационные панели, содержащие графики основных показателей. Они часто используются в бизнесе для мониторинга, создания отчетности и при принятии решений. Приведенный на картинке пример сделан с помощью сервиса <a href="http://www.tableau.com">Tableu</a>.</p>
 
-<p><img src="/images/Dashboard.png"></p>
+<p><img src="/images/Dashboard.png">	    </p>
 
 <p>Еще один замечательный пример интерактивного исследования данных — приложение <a href="http://www.gapminder.org">Gapminder</a>.
 Пузырьковая диаграмма, демонстрирующая изменения экономических и социальных показателей для стран мира за последние десятилетия.</p>
 
-<p><img src="/images/hans-rosling.jpg"></p>
+<p><img src="/images/hans-rosling.jpg">	    </p>
 
 <p>Стоит посмотреть шикарную <a href="http://www.youtube.com/watch?v=hVimVzgtD6w">первую презентацию</a>  этой программы ее автором — шведским профессором Хансом Рослингом на конференции TED. Это тот редкий случай, когда сложная графика на экране становится понятной благодаря анимации и сильному выступлению докладчика. Последующие выступления Рослинга также заслуживают внимания, в том числе с точки зрения наглядного изображения информации.</p>
 
@@ -214,7 +918,7 @@
 <p>В качестве примера приведу иллюстрацию из замечательной книги Алексея Каптерева “Мастерство презентации”.
 Так он представляет типичный слайд с графиком из корпоративной презентации:</p>
 
-<p><img src="/images/slide01.png"></p>
+<p><img src="/images/slide01.png">	    </p>
 
 <p>Научные презентации тоже часто изобилуют сложными диаграммами, как будто это повышает доверие к автору.
 Но опять же, стоит учитывать ожидания аудитории — на научной конференции люди больше настроены думать и вникать, так что могут просто не доверять слишком простой диаграмме.
@@ -232,27 +936,27 @@
 <p>Рассмотрим приведенное в той же книге преобразование диаграммы Минара. Превращаем аналитическую графику в картинку, которая будет убедительно смотреться на слайде презентации.
 “Нижняя диаграмма выглядит сильно упрощенной, но она способна донести вложенное в нее послание. Дело в том, что на самом деле необязательно видеть каждую российскую речушку, чтобы понять: Наполеон не был побежден в какой-то крупной битве.”</p>
 
-<p><img src="/images/slide02.png"></p>
+<p><img src="/images/slide02.png">	    </p>
 
-<p>Из-за своей презентационной специфики этот тип визуализации наиболее подвержен <strong>графическим манипуляциям</strong>. Смещение оси ординат, игры с относительным масштабом и перспективой, все прелести круговой диаграммы и “крутые” 3D эффекты — все это встречается здесь очень часто. Иногда умышленно, иногда по незнанию. Те же трехмерные эффекты встроены в PowerPoint и к сожалению все еще пользуются популярностью.</p>
+<p>Из-за своей презентационной специфики этот тип визуализации наиболее подвержен <strong>графическим манипуляциям</strong>. Смещение оси ординат, игры с относительным масштабом и перспективой, все прелести круговой диаграммы и “крутые” 3D эффекты — все это встречается здесь очень часто. Иногда умышленно, иногда по незнанию. Те же трехмерные эффекты встроены в PowerPoint и к сожалению все еще пользуются популярностью. </p>
 
 <p>На слайде старины Стива сектор 19.5% выглядит больше, чем  21.2% за счет добавления объема. С круговой диаграммой на второй картинке тоже что-то не так.
 Подробнее про подобные манипуляции можно почитать <a href="http://en.wikipedia.org/wiki/Misleading_graph">здесь</a>.</p>
 
-<p><img src="/images/Presentation.png"></p>
+<p><img src="/images/Presentation.png">	    </p>
 
 <h2 id="section-4">Инфографика</h2>
 
 <p>Слово инфографика в последнее время стало очень популярно. 
 Из-за отсутствия точного определения его часто путают с другими видами визуализации или называют инфографикой любую красивую картинку с цифрами.</p>
 
-<p>Я бы выделил следующие особенности, присущие именно инфографике. Во-первых, цель инфографики — просвещение и развлечение. Во-вторых, инфографика создается дизайнерами и журналистами. Существует даже специальный термин — журналистика данных. В-третьих, большое внимание уделяется привлекательности картинки.</p>
+<p>Я бы выделил следующие особенности, присущие именно инфографике. Во-первых, цель инфографики — просвещение и развлечение. Во-вторых, инфографика создается дизайнерами и журналистами. Существует даже специальный термин — журналистика данных. В-третьих, большое внимание уделяется привлекательности картинки. </p>
 
 <p>Хорошая инфографика похожа на аналитическую визуализацию. Но она не нацелена на поиск закономерностей или принятие решений, ее роль скорее просветительская. Рассмотрим несколько примеров.</p>
 
 <p>Визуализация <a href="http://www.brainpickings.org/2012/11/29/giorgia-lupi-noble-prizes-visualization/">нобелевских лауреатов</a></p>
 
-<p><img src="/images/nobel-prizes-and-laureates.jpg"></p>
+<p><img src="/images/nobel-prizes-and-laureates.jpg">	    </p>
 
 <p>Красивая <a href="http://www.malofiejgraphics.com/la-ballena-franca-grafico-mas-influente-de-los-ultimos-veinte-anos/">инфографика о китах</a></p>
 
@@ -389,7 +1093,7 @@ project-folder/
                index.html
 </code></p>
 
-<p>Папка с библиотекой может иметь и другое имя, например содержать номер актуальной версии. Слово min означает ограниченный функционал для разработчика, но и ее вполне хватит для начала работы.</p>
+<p>Папка с библиотекой может иметь и другое имя, например содержать номер актуальной версии. Слово min означает ограниченный функционал для разработчика, но и ее вполне хватит для начала работы. </p>
 
 <p>Я не буду останавливаться на описании основ веб-технологии, которые вы можете изучить самостоятельно. Для начала достаточно понимать, как работает HTML-документ, для чего нужны стили CSS и  как устроена SVG графика. Весь приведенный в последующих примерах код должен работать в таком шаблоне (в поле src должен быть указан путь к той версии библиотеки, которую вы скачали, или же ссылка на актуальную версию в Интернете “http://d3js.org/d3.v3.min.js”):</p>
 
@@ -991,7 +1695,7 @@ var circle = svg.selectAll("circle")
 
 <p><img src="/images/Data_Scientist_Job_Trend.png" title="Job Trends" ></p>
 
-<p>Такие компании, как Google, Facebook, Microsoft, Apple, Linkedin, Baidu активно нанимают к себе профессионалов в области науки о данных. В Интернете появилось большое количество ресурсов, посвящённых Data Science, например, различные MOOC (online-курсы по Machine Learning и Data Mining на образовательных сайтах), специализированные блоги. В прессе появляется всё больше сообщений об успехах в области науки о данных. Университеты предлагают студентам программы обучения по Data Science (например, Имперский колледж Лондона, Вашингтонский университет, Нью-Йоркский университет и т.д.). Что же такое — наука о данных?</p>
+<p>Такие компании, как Google, Facebook, Microsoft, Apple, Linkedin, Baidu активно нанимают к себе профессионалов в области науки о данных. В Интернете появилось большое количество ресурсов, посвящённых Data Science, например, различные MOOC (online-курсы по Machine Learning и Data Mining на образовательных сайтах), специализированные блоги. В прессе появляется всё больше сообщений об успехах в области науки о данных. Университеты предлагают студентам программы обучения по Data Science (например, Имперский колледж Лондона, Вашингтонский университет, Нью-Йоркский университет и т.д.). Что же такое — наука о данных? </p>
 
 <p>Потребность в анализе данных, нахождении в них закономерностей во многом обусловлена феноменом Big Data, т.е. необходимостью в манипулировании и обработке данных огромных объёмов, различной природы, часто плохо структурированных. Это стало возможно благодаря развитию Интернета и технологий хранения и передачи информации. У компаний накопилось очень много различных данных, и закономерно появилась задача извлечения из них полезной информации, которая может помочь в принятии решений. Традиционным подходом к проблемам такого вида была статистика, получившая большое развитие в XX веке. Однако, одних возможностей, которые предоставляет статистический аппарат, мало для всестороннего анализа больших неструктурированных данных. Стало понятно, что специалисту по анализу данных необходим сплав знаний из различных областей математики, статистики, информатики и предметной области знаний. Кроме того, стоит выделить в отдельную категорию задачи, связанные с искусственным интеллектом, такие как компьютерное зрение, обработка естественного языка, речи. Таким образом, Data Science является весьма эклектичной дисциплиной, это хорошо показано на диаграмме (ставшей обязательной для статей о Data Science, <a href="http://drewconway.com/zia/2013/3/26/the-data-science-venn-diagram">первоисточник</a>):</p>
 
@@ -999,9 +1703,9 @@ var circle = svg.selectAll("circle")
 
 <p>На мой взгляд, основные области, в которых требуются знания человеку, занимающемуся наукой о данных (его называют <em>data scientist</em> или иногда <em>датологом</em>) являются статистика и математика, машинное обучение, информатика (Computer Science), различные прикладные области. Сделаем их краткий обзор. Однако, перед этим давайте разберёмся с самим термином “наука о данных”.</p>
 
-<p>Сейчас можно найти огромное количество различной информации на этот счёт: от Википедии до блогов. Во всех этих источниках нет чёткого и однозначного определения Data Science, что не удивительно, потому что наука о данных — ещё очень молодая и активно развивающаяся область знания, она не успела как следует оформиться ни в академических кругах, ни в обществе.</p>
+<p>Сейчас можно найти огромное количество различной информации на этот счёт: от Википедии до блогов. Во всех этих источниках нет чёткого и однозначного определения Data Science, что не удивительно, потому что наука о данных — ещё очень молодая и активно развивающаяся область знания, она не успела как следует оформиться ни в академических кругах, ни в обществе. </p>
 
-<p>Существует несколько более-менее устоявшихся в научной литературе и публицистике терминов, связанных с наукой о данных: Data Science, Data Mining (интеллектуальный анализ данных), Machine Learning (машинное обучение). Значения и взаимосвязь этих терминов в разных источниках могут трактоваться по-разному, я рассматриваю Machine Learning как часть Data Mining, которая в свою очередь входит в понятие Data Science. В этой статье я постараюсь рассказать, чем является наука о данных на мой взгляд.</p>
+<p>Существует несколько более-менее устоявшихся в научной литературе и публицистике терминов, связанных с наукой о данных: Data Science, Data Mining (интеллектуальный анализ данных), Machine Learning (машинное обучение). Значения и взаимосвязь этих терминов в разных источниках могут трактоваться по-разному, я рассматриваю Machine Learning как часть Data Mining, которая в свою очередь входит в понятие Data Science. В этой статье я постараюсь рассказать, чем является наука о данных на мой взгляд. </p>
 
 <h2 id="section">Статистика и математика</h2>
 
@@ -1045,17 +1749,21 @@ var circle = svg.selectAll("circle")
 
 <p><img src="/images/unsupervised_learning_res.png" title="Unsupervised Learning Result" ></p>
 
-<p>В отдельный класс выделяют алгоритмы <em>обучения с подкреплением</em> (<em>reinforcement learning</em>). Это особый вид машинного обучения, при котором обучение происходит путём взаимодействия с внешней средой. На вход такому алгоритму подаются данные, состоящие из $(x_k, y_k)$, где $y_k$ — некая реакция среды. Обучение с подкреплением является очень интересной областью для исследований, которая активно используется в кибернетике и робототехнике. Хорошими примерам задач для методов этого класса являются игры. Например, существуют реализации алгоритмов обучения с подкреплением для игры в шахматы или в “Space Invaders” (компания <a href="http://deepmind.com/">DeepMind</a>). Примером таких методов может служить Q-обучение.</p>
+<p>В отдельный класс выделяют алгоритмы <em>обучения с подкреплением</em> (<em>reinforcement learning</em>). Это особый вид машинного обучения, при котором обучение происходит путём взаимодействия с внешней средой. На вход такому алгоритму подаются данные, состоящие из $(x_k, y_k)$, где $y_k$ — некая реакция среды. Обучение с подкреплением является очень интересной областью для исследований, которая активно используется в кибернетике и робототехнике. Хорошими примерам задач для методов этого класса являются игры. Например, существуют реализации алгоритмов обучения с подкреплением для игры в шахматы или в “Space Invaders” (компания <a href="http://deepmind.com/">DeepMind</a>). Примером таких методов может служить Q-обучение. </p>
 
 <p>Двумя основными дисциплинами, на пересечении которых находится машинное обучение, являются статистика и математическая оптимизация. О статистике мы уже говорили в предыдущем разделе. Алгоритмы машинного обучения строят вероятностные модели, используя аппарат теории вероятностей и математической статистики, например, широко применяются такие инструменты, как байесовская статистика, анализ главных компонент, факторный анализ, анализ временных рядов, метод максимума правдоподобия, корреляционный анализ и т.д.</p>
 
 <p>Оптимизация — это класс задач нахождения некоторых наилучших, оптимальных значений для достижения поставленной цели. Говоря более формально, задача оптимизации заключается в нахождении максимума или минимума (экстремума) целевой функции при выполнении некоторых линейных или нелинейных ограничений. Методами решения таких задач занимается математическое программирование. Оптимизация исключительно важна для машинного обучения, потому что после выбора модели необходимо найти её оптимальные параметры. Эта процедура сводится к минимизации некоторого функционала среднего риска</p>
 
-<script type="math/tex; mode=display">F(\theta) \to \min_{\theta},</script>
+<script type="math/tex; mode=display">
+F(\theta) \to \min_{\theta},
+</script>
 
-<p>задаваемого с помощью меры ошибки. Например, достаточно распространённой является квадратичная мера ошибки, тогда</p>
+<p>задаваемого с помощью меры ошибки. Например, достаточно распространённой является квадратичная мера ошибки, тогда </p>
 
-<script type="math/tex; mode=display">F(\theta) = \frac{1}{N} \sum_{k=1}^N (y_k - h_{\theta}(x_k))^2.</script>
+<script type="math/tex; mode=display">
+F(\theta) = \frac{1}{N} \sum_{k=1}^N (y_k - h_{\theta}(x_k))^2.
+</script>
 
 <p>Этот процесс и называется обучением. В машинном обучении широко применяются такие алгоритмы оптимизации, как градиентный спуск,  квазиньютоновский метод, метод множителей Лагранжа, стохастическая оптимизация и другие.</p>
 
@@ -1065,7 +1773,7 @@ var circle = svg.selectAll("circle")
 
 <h2 id="computer-science--">Computer Science и программирование</h2>
 
-<p>Навыки в области Computer Science (информационных технологий) очень важны для того, кто занимается Data Science. В одной из <a href="http://www.quora.com/What-is-the-difference-between-a-data-scientist-and-a-statistician">дискуссий на Quora</a> я встретил такое определение:</p>
+<p>Навыки в области Computer Science (информационных технологий) очень важны для того, кто занимается Data Science. В одной из <a href="http://www.quora.com/What-is-the-difference-between-a-data-scientist-and-a-statistician">дискуссий на Quora</a> я встретил такое определение: </p>
 
 <blockquote>
   <p>Человек, занимающийся наукой о данных — это тот, кто лучше разбирается в статистике, чем любой программист, и лучше разбирается в программировании, чем любой статистик.</p>
@@ -1073,7 +1781,7 @@ var circle = svg.selectAll("circle")
 
 <p>Data scientist является практиком, а не теоретиком. Он постоянно работает с данными и исследует работу алгоритмов машинного обучения на практике. Для этого он использует различные технологии, языки программирования и библиотеки.</p>
 
-<p>Для разработки прикладных программ тому, кто занимается наукой о данных, нужно знать некоторые теоретические вещи из Computer Science: классические алгоритмы и структуры данных, умение оценивать вычислительную сложность алгоритмов, знание принципов объектно ориентированного программирования и шаблонов проектирования.</p>
+<p>Для разработки прикладных программ тому, кто занимается наукой о данных, нужно знать некоторые теоретические вещи из Computer Science: классические алгоритмы и структуры данных, умение оценивать вычислительную сложность алгоритмов, знание принципов объектно ориентированного программирования и шаблонов проектирования. </p>
 
 <p>Из языков программирования наиболее распространёнными и востребованными в области анализа данных являются Java, Python, C/C++, Scala. Также необходимы навыки работы с базами данных и знание SQL. Будут полезны навыки работы в Linux. Кроме того, существуют специализированные инструменты и библиотеки для использования методов машинного обучения и работы с данными, основные из них:</p>
 
@@ -1090,7 +1798,7 @@ var circle = svg.selectAll("circle")
 
 <ul>
   <li>Hadoop — реализация модели распределённых вычислений MapReduce и набор различных утилит и библиотек для выполнения распределённых вычислений. В его основе лежит файловая система HDFS;</li>
-  <li>Pig — платформа для создания MapReduce приложений с помощью Hadoop;</li>
+  <li>Pig — платформа для создания MapReduce приложений с помощью Hadoop; </li>
   <li>Hive, Impala — инфраструктуры хранилища данных, построенного на основе Hadoop;</li>
   <li>Spark — инструментарий для распределённого анализа данных;</li>
   <li>NoSQL базы данных: HBase, MongoDB, Apache Cassandra.</li>
@@ -1146,7 +1854,7 @@ var circle = svg.selectAll("circle")
   <li>Разработчики — эти люди прекрасно владеют всем тем, что было описано в разделе “Computer Science и программирование”. Они заточены на создание конечных, работающих с пользователем продуктов. Они умеют добывать, хранить и манипулировать данными.</li>
 </ol>
 
-<p>Такая классификация является очень условной, это два крайних класса, чаще всего на практике датологи попадают в среднюю между этими двумя категорию, согласно своим интересам и профессиональным обязанностям.</p>
+<p>Такая классификация является очень условной, это два крайних класса, чаще всего на практике датологи попадают в среднюю между этими двумя категорию, согласно своим интересам и профессиональным обязанностям. </p>
 
 <p>В дальнейшем в блоге datadeep.ru наша команда будет развивать и дополнять многие темы, затронутые в этой статье.</p>
 
@@ -1177,7 +1885,7 @@ var circle = svg.selectAll("circle")
   </li>
   <li>Полезные ресурсы, посвящённые Data Science:
     <ul>
-      <li><a href="http://www.kdnuggets.com/">KDnuggets.com</a> — ресурс с большим количеством новостей и информации от создателя термина Data Mining Григория Пятецкого-Шапиро;</li>
+      <li><a href="http://www.kdnuggets.com/">KDnuggets.com</a> — ресурс с большим количеством новостей и информации от создателя термина Data Mining Григория Пятецкого-Шапиро; </li>
       <li><a href="http://www.datasciencecentral.com/">datasciencecentral.com</a> — ресурс, содержащий блоги по статистике, машинному обучению и науке о данных в целом;</li>
       <li><a href="http://www.kaggle.com/">kaggle.com</a> — собрание соревнований по Data Science;</li>
       <li><a href="http://machinelearningmastery.com/blog/">machinelearningmastery.com</a> — блог по вопросам, связанным с машинным обучением;</li>

@@ -1,57 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/</loc>
+    <lastmod>2015-10-28T23:59:59+03:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>http://datadeep.ru/blog/2015/09/02/mnoghoobraziie-vizualizatsii/</loc>
     <lastmod>2015-09-02T19:47:49+03:00</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/blog/2015/08/22/obnaruzhieniie-dorozhnykh-znakov-pri-pomoshchi-deep-learning/</loc>
     <lastmod>2015-08-22T15:15:32+03:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://datadeep.ru/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch&#8217;iu-deep-learning/</loc>
+    <lastmod>2015-08-21T20:51:56+03:00</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/</loc>
     <lastmod>2014-12-04T20:44:23+03:00</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/</loc>
     <lastmod>2014-11-20T23:00:01+03:00</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/blog/2014/11/07/chto-takoie-data-science/</loc>
     <lastmod>2014-11-07T14:08:41+03:00</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/</loc>
+    <lastmod>2015-10-28T23:13:57+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/blog/archives/</loc>
+    <lastmod>2015-10-28T23:13:57+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/about_blog/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/mashinnoie-obuchieniie/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/statistika/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/proghrammirovaniie/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/vizualizatsiia/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/optimizatsiia/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/deep-learning/</loc>
-  </url>
-  <url>
-    <loc>http://datadeep.ru/blog/categories/komp&#8217;iutiernoie-zrieniie/</loc>
+    <lastmod>2015-10-28T23:13:57+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://datadeep.ru/downloads/code/intro_d3_js.html</loc>
-    <lastmod>2015-08-18T22:29:51+03:00</lastmod>
+    <lastmod>2015-09-04T14:38:13+03:00</lastmod>
+    <priority>0.6</priority>
   </url>
 </urlset>

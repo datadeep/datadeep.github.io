@@ -1,0 +1,1183 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Тематическое моделирование Игры Престолов - DataDeep</title>
+  <meta name="author" content="Команда datadeep.ru">
+
+  
+  <meta name="description" content="Основы тематического моделирования на примере текста книг серии "Песнь Льда и Пламени"">
+  <meta name="keywords" content="visualization, machine learning, topic modelling, game of thrones, latent semantic analysis, natural language processing, text analysis, singular value decomposition">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="DataDeep" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-56118002-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">DataDeep</a></h1>
+  
+    <h2>Sapere aude</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation">
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:datadeep.ru" />
+    <input class="search" type="text" name="q" results="0" placeholder="Поиск"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Блог</a></li>
+  <li><a href="/blog/archives">Архив блога</a></li>
+  <li><a href="/about_blog">О блоге</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Тематическое моделирование Игры Престолов</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-10-28T23:59:59+03:00'><span class='date'>28/10/2015</span> <span class='time'>23:59</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://datadeep.ru">Комментарии</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><div>
+  <style type="text/css">
+
+    ul{margin:1em 0 1em 2em;}
+    ol{margin:1em 0 1em 2em;}
+
+  </style>
+</div>
+
+<p>Когда мы имеем дело с большим количеством текстовых документов, первое что нас интересует — о чем эти документы: есть ли между ними что-то общее, о чем каждый из документов, о чем они в целом? Попробуем ответить на эти вопросы, воспользовавшись инструментарием науки о данных. Да не просто так, а на примере серии книг “Песнь Льда и Пламени” (кратко, ПЛиО), по мотивом которой снят не безызвестный сериал “Игра Престолов”.</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_tag_cloud.jpg" width="768" height="576" title="КДПВ" /></p>
+
+<!-- more -->
+
+<p>Одно из основных понятий, которое поможет ответить на заданные вопросы —  <em>тема</em>. Тема — это то, о чем говориться в тексте, например, объект его обсуждения. Разумеется, любой может определить основную тему текста, прочитав его. Однако, есть несколько причин поступить иначе. Во-первых, этот процесс достаточно трудоемкий, особенно если учесть потенциально большие коллекции документов (например, весь интернет) — одному человеку все не прочитать. Во-вторых, этот подход субъективный, а хотелось бы получить объективную (а еще лучше, численную) характеристику тематики текста. Наконец, этот блог не о чтении, а об анализе данных. И именно путем анализа данных мы и планируем пойти.</p>
+
+<p>Для автоматического поиска тем в документах мы воспользуемся таким подходом, как <em>тематическое моделирование</em>. Тематическое моделирование — это подраздел машинного обучения, изучающий способы построения <em>тематических моделей</em> по заданному текстовому корпусу. В свою очередь, тематическая модель — это статистическая модель, которая моделирует взаимосвязь наблюдамемых переменных: слов и документов и ненаблюдаемых переменных — тем. Причем, темы строятся (ищутся) автоматически, без участия пользователя (который может лишь задать некоторые параметры модели, например количество тем). </p>
+
+<p>Тем самым, тематическая модель дает ответы на два основных вопроса:</p>
+
+<ol>
+  <li>Какие слова образуют каждую из тем?</li>
+  <li>К каким темам относится каждый из документов?</li>
+</ol>
+
+<p>Причем, тематическая модель отвечает на эти вопросы численно: </p>
+
+<ol>
+  <li>Для каждого слова и каждой темы дается численная характеристика важности слова для этой темы.</li>
+  <li>Для каждой темы и каждого документа дается численная характеристика, характериизующая роль темы в этом документе.</li>
+</ol>
+
+<p>Таким образом, тема фактически задается весами составляющих ее слов. Более того, слова и документы описываются численным вектором в пространстве тем и…, не будем забегать вперед :)</p>
+
+<p>В этой статье мы разберемся в одном из базовых методов тематического моделирования — Латентном Семантическом Анализе (aka, Latent Semantic Analysis, LSA, Latent Semantic Indexing, LSI), затем реализуем его на языке Python, а главное — применим на текстовом корпусе, составленном из книг серии “Песнь Льда и Пламени”. Таким образом, статья состоит из трех частей: теории, практики и результатов. Первая часть не отличается краткостью и может вызвать приступ “T.L.D.R.”, поэтому, если вы знакомы с основами тематического моделирования или же в них не заинтересованы, можете сразу переходить ко второй части. Если же вас интересуют лишь результаты — смело прокручивайте до последней.</p>
+
+<h1 id="section">Часть 1. Теория</h1>
+
+<p>Сначала опишем несколько алгоритмов и подходов, из которых состоит алгоритм тематического моделирования LSA, а затем объеденим их вместе.</p>
+
+<p>Итак, определившись с тем, что мы хотим получить (тематическую модель), остается понять, как же это сделать. Сразу скажу, без математики не обойтись. К сожалению, математике не знакомы понятия “текст”, “документ”, “слово”, “тема” и т.п. Зато, ей хорошо понятен язык чисел и векторов. И именно на язык векторов нам и предстоит перейти для решения нашей задачи. Для этого мы воспользуемся так называемой <em>векторной моделью</em> текста — “переведем” наш корпус с прикладного языка слов и документов на абстрактный язык линейной алгебры.</p>
+
+<h2 id="section-1">Векторная модель</h2>
+<p>Векторная модель — модель представления текстовых документов в виде векторов, где каждое измерение вектора-документа соответствует какому-либо слову. Рассмотрим способ построения этой модели.</p>
+
+<p>Итак, на входе у нас коллекция из <script type="math/tex">N</script> документов. Пронумеруем их числами от 1 до <script type="math/tex">N</script> так,  что индексом <script type="math/tex">d \in \{1..N\}</script> обозначается <script type="math/tex">d</script>-й элемент коллекции. Далее, рассмотрим словарь слов — это все уникальные слова, встречающиеся в наших документах. Допустим, таких слов <script type="math/tex">M</script> штук и пронумеруем их от 1 до <script type="math/tex">M</script> индексом <script type="math/tex">w</script>. Теперь, посчитаем сколько раз каждое слово <script type="math/tex">w=1..M</script> входит в каждый документ <script type="math/tex">d=1..N</script> и обозначим это число <script type="math/tex">n_{d,w}</script>. Из этих чисел сформируем матрицу <script type="math/tex">\mathbf{X} = (n_{d,w})_{d,w}</script> — <a href="https://en.wikipedia.org/wiki/Document-term_matrix">матрицу частот слов в документах</a>. Строки этой матрицы соответствуют документам, а столбцы — словам. Скорее всего, эта матрица будет <em>разряженной</em> — большая часть ее элементов будет равна нулю (ведь каждый документ содержит лишь небольшую долю всех слов).</p>
+
+<p>Перевод окончен! Теперь наш текстовый корпус представлен в виде матрицы <script type="math/tex">\mathbf{X}</script>. 
+В результате получится матрица выглядящая примерно следующим образом.</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_X_matrix_vis.svg" width="384" height="288" title="Матрица документ-слово" /></p>
+
+<p>Стоит заметить, что подобная модель под собой имеет два основных предположения.</p>
+
+<ul>
+  <li>Порядок документов в коллекции не имеет значения.</li>
+  <li>Порядок слов в документе не имеет значения (т.н. модель “мешка слов” или “bag of words”).</li>
+</ul>
+
+<p>Если первое предположение вполне естественно, то второе может показаться неоднозначным. Казалось, даже такая мелочь, как запятая в предложении “казнить нельзя, помиловать” полностью меняет его смысл, что уж говорить о порядке слов даже не в одном предложении, а в нескольких абзацах. Несмотря на это резонное замечание, модель “мешка слов” — одна из наиболее широко используемых и хорошо зарекомендовавшая себя на практике. Тем более это верно для такой задачи, как определение темы. Действительно, как не расставляй слова и знаки препинания в предложении “казнить, нельзя помиловать”, легко понять что речь идет о казни (“казнить” же или “помиловать” — детали).</p>
+
+<h2 id="section-2">Стемминг</h2>
+<p>Далее развивая мысль о значимости тех или иных деталей для определения тематики текста, можно заметить, что слово может встречаться в тексте в различных формах: с различными окончаниями и приставками, — но с единым смыслом. Например, неважно какую форму слова мы встретили в тексте: “казнить”, “казнят”, “казнен”, “казню”, “казнишь”, “казни” — все они относятся к теме “казнь”. Именно на нахождение <a href="https://ru.wikipedia.org/wiki/%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D0%B0_%D1%81%D0%BB%D0%BE%D0%B2%D0%B0">основы слова</a> по той или иной заданной его форме и направлен такой инструмент, как <em>стемминг</em>. 
+Здесь мы не будем разъяснять, какие бывают алгоритма стемминга (а их довольно много) и как они работают. Если возникнет интерес, можно начать со 
+<a href="https://ru.wikipedia.org/wiki/%D0%A1%D1%82%D0%B5%D0%BC%D0%BC%D0%B8%D0%BD%D0%B3">статьи в википедии</a>. Скажем только, что в дальнейшем мы будем использовать <a href="http://snowball.tartarus.org/">стеммер Snowball</a>, а точнее <a href="http://www.nltk.org/_modules/nltk/stem/snowball.html">его реализацию в NLTK</a>.</p>
+
+<p>Имея в руках стеммер, можно использовать его для преобразования каждого слова каждого документа в его нормальную форму. Тем самым мы, во-первых, значительно уменьшим общее количество слов, а следовательно и вычислительную трудоемкость, а во-вторых, упростим дальнейшую интерпретацию результатов.	</p>
+
+<h2 id="tf-idf">TF-IDF</h2>
+<p>TF-IDF — (Term Frequency - Inverse Document Frequency) методика оценки важности слова в документе. Она опирается на два основных предположения</p>
+
+<ol>
+  <li>Частота появления слова в документе пропорциональна его важности в этом документе.</li>
+  <li>Число документов, в котором встречается слово, обратно пропорционально его важности.</li>
+</ol>
+
+<p>Первое предположение вполне логично, а если поразмыслить то и с обоснованием второго не возникнет проблем: возьмем, например, “и” или “а” — они наверняка встретятся в большинстве документов, но на вряд ли привносят что-то в их тематику. Другой пример: возьмем текст новостей, посвященных гражданину N. Естественно, 99.9% из них будут содержать его фамилию в той или иной форме, которая в то же время, будет совершенно бесполезна для определение их темы (в контексте общей темы, посвященной этому гражданину).</p>
+
+<p>Эти два предположения TFIDF учитывает с помощью функций  <script type="math/tex">\mathrm{tf}</script> и <script type="math/tex">\mathrm{idf}</script> соответственно. Задаются они следующим образом</p>
+
+<ul>
+  <li><script type="math/tex">\mathrm{tf}(w, d) = n_{w, d}</script> — число вхождений слова <script type="math/tex">w</script> в документ <script type="math/tex">d</script>;</li>
+  <li><script type="math/tex">\mathrm{idf}(w) = \log \frac{N}{\lvert \{d \; : \; n_{w, d} > 0\} \rvert }</script> — логарифм обратной доли документов, содержащих слово <script type="math/tex">w</script>.  </li>
+</ul>
+
+<p>Итоговая же оценка важности слова <script type="math/tex">w</script> для документа <script type="math/tex">d</script> описывается функцией <script type="math/tex">\mathrm{tfidf}</script>: </p>
+
+<script type="math/tex; mode=display">
+\mathrm{tfidf}(w, d) = \mathrm{tf}(w, d) * \mathrm{idf}(w)
+</script>
+
+<p>Таким образом, заменяя <script type="math/tex">\mathbf{X} = (n_{d,w})_{d,w}</script> на матрицу <script type="math/tex">\mathbf{X}_{tfidf} = (\mathrm{tfidf}(w, d))_{d, w}</script>, мы понижаем важность слов, встречающихся в большинстве документов и повышаем ее у слов встречающихся в относительно небольшом подмножестве документов.</p>
+
+<h2 id="section-3">Сингулярное разложение</h2>
+
+<p>Потихоньку мы подбираемся к самому интересному. Как же найти ответы на поставленные вопросы?
+Напомним, на какие вопросы должна ответить искомая тематическая модель коллекции документов.</p>
+
+<ol>
+  <li>Какие слова образуют каждую из тем?</li>
+  <li>К каким темам относится каждый из документов?</li>
+</ol>
+
+<p>Наша задача — численно ответить на эти вопросы на том же языке, на котором описана матрица документов-слов <script type="math/tex">\mathbf{X}</script>. </p>
+
+<p>Рассмотрим конкретную тему <script type="math/tex">t</script> и представи ответы на вопросы выше (пока гипотетически) в векторном виде:</p>
+
+<ol>
+  <li>Вектор <script type="math/tex">u_t \in \mathrm{R}^{N }</script>, <script type="math/tex">d</script>-й элемент которого <script type="math/tex">u_t^{(d)}</script> символизирует близость темы <script type="math/tex">t</script> документу <script type="math/tex">d</script>.</li>
+  <li>Вектор <script type="math/tex">v_t \in \mathrm{R}^{M }</script>, <script type="math/tex">w</script>-й элемент которого <script type="math/tex">v_t^{(w)}</script> символизирует важность слова <script type="math/tex">w</script> для темы <script type="math/tex">t</script>. </li>
+</ol>
+
+<p>Заметим, что если слово <script type="math/tex">w</script> важно для темы <script type="math/tex">t</script> (<script type="math/tex">v_t^{(w)}</script> велико), а тема <script type="math/tex">t</script> близка документу <script type="math/tex">d</script> (<script type="math/tex">u_t^{(d)}</script> велико), то велико будет и их произведение: <script type="math/tex">u_t^{(d)} v_t^{(w)}</script>. Если же тема <script type="math/tex">t</script> близка документу <script type="math/tex">d</script>, а слово <script type="math/tex">w</script>, напротив, не играет роли в теме <script type="math/tex">t</script> (<script type="math/tex">v_t^{(w)} \sim 0</script>), то и их произведение будет близко к нулю: <script type="math/tex">u_t^{(d)} v_t^{(w)}\sim 0</script>.   Более того, если перемножить два этих вектора, то получившаяся матрица <script type="math/tex">]mathbf{X}_t = u_t v_t^T</script> будет ни чем иным как корпус с единственной темой — темой <script type="math/tex">t</script>. </p>
+
+<p>Развивая эту идею, задачу построения тематической модели можно сформулировать следующим образом: </p>
+
+<blockquote>
+  <p>Необходимо найти комбинацию тем $t=1..K$ и соответствующих им векторов <script type="math/tex">u_t</script> и <script type="math/tex">v_t</script>, таких что их комбинация наилучшим образом описывает исходный корпус <script type="math/tex">\mathbf{X}</script>. </p>
+</blockquote>
+
+<p>“Наилучшим образом” будем понимать в смысле наименьшего квадратичного отклонения:</p>
+
+<script type="math/tex; mode=display">
+	\lvert\lvert X - \sum\limits_{t=1}^K \mathbf{X}_t^\top \rvert\rvert_2 
+	 =
+	\lvert\lvert X - \sum\limits_{t=1}^K u_t v_t^\top \rvert\rvert_2 
+	\longrightarrow 
+	\min\limits_{\{u_t, v_t\}_{t=1}^K}.
+</script>
+
+<p>Здесь на сцену выходит <em>сингулярное разложение</em> (<em>singular value decomposition</em>, <em>SVD</em>), решающее схожую задачу. Оно заключается в представлении вещественной матрицы <script type="math/tex">\mathbf{X} \in \mathrm{R}^{N\times M}</script>, <script type="math/tex">N > M</script> в виде:</p>
+
+<script type="math/tex; mode=display">
+\mathbf{X} = \mathbf{U} \mathbf{S} \mathbf{V}^\top = \sum_{t=1}^{M} s_t u_t v_t^\top,
+</script>
+
+<p>где <script type="math/tex">\mathbf{U} \in \mathrm{R}^{N\times M}</script>, <script type="math/tex">\mathbf{V} \in \mathrm{R}^{M\times M}</script> — ортогональные матрицы, состоящие из левых (<script type="math/tex">u_t</script>) и правых (<script type="math/tex">v_t</script>) сингулярных векторов, а <script type="math/tex">\mathbf{S} \in \mathrm{R}^{M\times M}</script> — диагональная матрица, на главной диагонали которой находятся сингулярные числа (<script type="math/tex">s_k</script>).</p>
+
+<p>Сингулярное разложение — одно из важнейших матричных разложений, применяемое во множестве как теоретических, так и практических областей: нахождении псевдообратной матрицы, решении линейных уравнений, снижении размерности, анализе временных рядов, рекомендательных системах и др. В качестве отправной точки можно обратиться к <a href="https://ru.wikipedia.org/wiki/%D0%A1%D0%B8%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D0%BE%D0%B5_%D1%80%D0%B0%D0%B7%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5">википедии</a> или довольно наглядной статье на <a href="http://www.ams.org/samplings/feature-column/fcarc-svd">ams.org</a>.</p>
+
+<p>SVD обладает множеством полезных свойтсва. В контексте нашей задачи определения тем в корпусе нам интересны следующие:</p>
+
+<ol>
+  <li>Все вектора <script type="math/tex">\{v_t\}</script> имеют длину равную единице и ортогональны друг другу — значит исключена возможность того, что все темы будут друг на друга похожи — в пространстве слов они ортогональны друг другу.</li>
+  <li>Сингулярные числа <script type="math/tex">s_t</script> расположены на диагонали матрицы <script type="math/tex">S</script> по убыванию — сперва идут темы обладающие наибольшим вкладом в коллекцию.</li>
+  <li>Сингулярные вектора определены с точность до знака: одновременно домножив <script type="math/tex">u_t</script> и <script type="math/tex">v_t</script> на -1 ничего не изменится — значит у каждой темы есть фактически два полюса: один описывается словами (элементами <script type="math/tex">\{v_t\}</script>) с наибольшим положительным весом, а другой — с наибольшим отрицательным.</li>
+  <li>Если рассмотреть <em>сокращенное сингулярное разложение</em> (<em>truncated SVD</em>): <script type="math/tex">X_K = \sum_{t=1}^{K} s_t u_t v_t^\top </script>, то это будет <em>наилучшим приближением матрицы <script type="math/tex">X</script> ранга <script type="math/tex">K</script></em> (в терминах <script type="math/tex">\lvert\lvert.\rvert\rvert_2</script> нормы). Это означает, что любой другой набор из <script type="math/tex">K</script> тем, представленный в виде троек <script type="math/tex">\{u_t, s_t, v_t\}_1^K</script> будет хуже описывать наш исходный корпус.</li>
+  <li>Так SVD разложение детерменировано, а значения <script type="math/tex">s_t</script> упорядочены, то выбор параметра <script type="math/tex">K</script> не влияет на сами темы — если выбрать <script type="math/tex">K=3</script> и <script type="math/tex">K=100</script>, то первые три темы в обоих случаях будут одинаковы.</li>
+</ol>
+
+<p>Довольно-таки неплохо! Учитывая, что это достается нам совершенно бесплатно :) </p>
+
+<p>Подытожим. Имея матрицу <script type="math/tex">\mathbf{X}</script>, все что нам нужно сделать для получения его тематической модели — это выбрать число <script type="math/tex">% <![CDATA[
+K < N, M %]]></script> и воспользоваться truncated SVD:</p>
+
+<script type="math/tex; mode=display">
+	U=\mathbf{U}_K, \mathbf{S}_K, \mathbf{V}^\top_K = \mathrm{svd}(\mathbf{X}, K)
+</script>
+
+<p>и тогда каждую тройку <script type="math/tex">u_k, s_k, v_k</script> можно будет интерпретировать следующим образом:</p>
+
+<ul>
+  <li><script type="math/tex">u_t \in \mathrm{R}^{N}</script> — вектор соответствия темы <script type="math/tex">t</script> каждому из документов <script type="math/tex">d=1..N</script>, чем больше <script type="math/tex">u_t^{(d)}</script> — тем ближе документ <script type="math/tex">d</script> к теме <script type="math/tex">t</script>;</li>
+  <li><script type="math/tex">v_t \in \mathrm{R}^{M}</script> — вектор соответствия слов <script type="math/tex">w=1..M</script> теме <script type="math/tex">t</script>, чем больше <script type="math/tex">v_t^{(w)}</script> — тем важнее слово <script type="math/tex">w</script> в теме <script type="math/tex">t</script>;</li>
+  <li><script type="math/tex">s_t \in \mathrm{R}</script> — относительный вес темы <script type="math/tex">t</script> в корпусе.</li>
+</ul>
+
+<p>Для наглядности мы проиллюстрировали сокращенное сингулярное разложение матрицы документ-слово (крестиками обозначены ненулевые значения).</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_SVD_vis.svg" width="768" height="576" title="SVD матрицы документ-слово" /></p>
+
+<p>Стоит отметить, что согласно пятому свойству, “больше” стоит понимать в абсолютном смысле, ведть большое отрицательно число можно легко превратить в большое положительно, домножив соответствующие вектора <script type="math/tex">u_t, v_t</script> на -1.</p>
+
+<h2 id="section-4">Латентный Семантический Анализ</h2>
+
+<p>На этом с математикой покончено! Осталось собрать элементы мозайки воедино. </p>
+
+<p>Латентный семантический анализ фактически является комбинацией описанных ваше методов. Кратко алгоритм можно описать следющим образом.</p>
+
+<ol>
+  <li>На входе LSA поступает коллекция текстовых документов.</li>
+  <li>Текстовые документы переводятся в матрицу частот слов в документах <script type="math/tex">X</script> посредством векторной модели.</li>
+  <li>Элементы матрицы <script type="math/tex">\mathbf{X}</script> взвешиваются посредством TF-IDF: <script type="math/tex">\mathbf{X}_{tfidf} = \mathrm{tfidf}(\mathbf{X})</script>.</li>
+  <li>К взвешенной матрице применяется SVD: <script type="math/tex">\mathbf{U}_K, \mathbf{S}_K, \mathbf{V}^\top_K = \mathrm{svd}(\mathbf{X}_{tfidf}, K)</script>.</li>
+  <li>Полученные тройки <script type="math/tex">u_t, s_t, v_t</script> используются для интерпретаций тем <script type="math/tex">t=1..K</script>.</li>
+</ol>
+
+<p>Как видно, среди этапов алгоритма отсутствует стемминг. Тем не менее, эта операция является де-факто стандартом в задачах тематического моделирования и его мы добавили по собственной инициативе в следующем разделе (можно рассмотреть его в качестве шага алгоритма под номером <script type="math/tex">\frac{1}{2}</script>).</p>
+
+<p>На этом с теорией наконец-то покончено, перейдем к практике!</p>
+
+<h1 id="section-5">Часть 2. Практика</h1>
+
+<p>С чего начать? С получения данных, конечно! Нам нужен текст серии “Песнь Льда и Пламени”, желательно всех вышедших книг. Есть различные схемы, в том числе черные и серые, но есть и белые. Мы воспользовались совершенно белым предложением интернет-магазина litres.ru (на правах рекламы :)), где можно приобрести всю серию по <a href="http://www.litres.ru/serii-knig/pesn-lda-i-ognya/elektronnie-knigi/">довольно привлекательной цене</a> — после этого все книги будут доступны в множестве форматов, в том числе и предпочтительным для нас txt.</p>
+
+<p>Когда книги скачены, можно перейти первому этапу — предобработке данных.</p>
+
+<h2 id="section-6">Предобработка данных</h2>
+
+<p>Сначала, разберем текст книг по главам и посмотрим на их размер по числу слов.</p>
+
+<p>На примере первой книги “Игре Престолов”:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Игра_Престолов</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">0. Пролог 2925
+</span><span class="line">1. Бран 2295
+</span><span class="line">2. Кейтилин 1643
+</span><span class="line">3. Дейенерис 3284
+</span><span class="line">4. Эддард 3068
+</span><span class="line">...
+</span><span class="line">68. Дейенерис 3273
+</span><span class="line">69. Тирион 2738
+</span><span class="line">70. Джон 3909
+</span><span class="line">71. Кейтилин 3641
+</span><span class="line">72. Дейенерис 2738
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>и последней на данный момент книге серии — 2-го тома “Танца с Драконами”:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Танец_с_Драконами_2</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">0. Принц Винтерфелла 4564
+</span><span class="line">1. Страж 3891
+</span><span class="line">2. Джон 2532
+</span><span class="line">3. Тирион 3033
+</span><span class="line">4. Переметчивый 3441
+</span><span class="line">...
+</span><span class="line">31. Укротитель драконов 2584
+</span><span class="line">32. Джон 3897
+</span><span class="line">33. Десница королевы 4106
+</span><span class="line">34. Дейенерис 3775
+</span><span class="line">35. Эпилог 4518
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Судя по списку глав все верно — текст мы распарсили правильно, двигаемся дальше. Далее нам нужна коллекция документов. В данном случае документы напрашиваются сами собой: возьмем главы каждой книги. Итого у нас получится 345 документов — не так уже и много, но документы внушительных размеров.</p>
+
+<p>Теперь все готово: мы преобразовали исходные тексты в “документы” — объединенные блоки текста. Можно применять LSA.</p>
+
+<h2 id="section-7">Перевод в векторную модель</h2>
+<p>Как мы помним, первый этап LSA — перевод документов в векторный вид. 
+Начнем с разбиения наших документов на слова и последующий их стемминг</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Разбиение документов на слова</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+</pre></td><td class="code"><pre><code class="python"><span class="line"><span class="kn">import</span> <span class="nn">re</span>
+</span><span class="line"><span class="n">non_letter_rgxp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">u&#39;[^а-яА-Я ]&#39;</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line"><span class="n">remove_non_letters</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="n">non_letter_rgxp</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+</span><span class="line">
+</span><span class="line"><span class="kn">import</span> <span class="nn">nltk</span>
+</span><span class="line"><span class="kn">from</span> <span class="nn">nltk.stem.snowball</span> <span class="kn">import</span> <span class="n">SnowballStemmer</span>
+</span><span class="line">
+</span><span class="line"><span class="n">stemmer</span> <span class="o">=</span> <span class="n">SnowballStemmer</span><span class="p">(</span><span class="s">&quot;russian&quot;</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line"><span class="k">def</span> <span class="nf">stem</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+</span><span class="line">    <span class="k">return</span> <span class="p">(</span><span class="n">stemmer</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line"><span class="n">docs_tokens</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class="line">    <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span> <span class="n">stem</span><span class="p">(</span><span class="n">remove_non_letters</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">))))</span>
+</span><span class="line">    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span>
+</span><span class="line"><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Теперь, посчитаем частоту слов</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Подсчет частоты слов</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="python"><span class="line"><span class="kn">import</span> <span class="nn">collections</span>
+</span><span class="line"><span class="n">token_frequency_dict</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class="line"><span class="k">for</span> <span class="n">tokens</span> <span class="ow">in</span> <span class="n">docs_tokens</span><span class="p">:</span>
+</span><span class="line">    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+</span><span class="line">        <span class="n">token_frequency_dict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Взглянем на наиболее часто встречающиеся слова</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Самые частые слова</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">400392 и
+</span><span class="line">271847 он
+</span><span class="line">261481 не
+</span><span class="line">239817 в
+</span><span class="line">187947 на
+</span><span class="line">134724 с
+</span><span class="line">129038 что
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>.., и на самые редкие</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Самые редкие слова</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">3 линнистер
+</span><span class="line">3 близя
+</span><span class="line">3 персонаж
+</span><span class="line">3 нервнич
+</span><span class="line">3 свежеоперен
+</span><span class="line">3 прожиг
+</span><span class="line">3 долженствова
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Как видно, среди часто встречающихся слов довольно много бессмысленных “коротышек”: “а”, “и”, “не” и т.п. От редких же слов больше вреда, чем пользы: они раздувают словарь слов (а значит и размерность будущей матрицы <script type="math/tex">X</script>, делая вычисления более сложными), а в определении темы вряд ли помогут, так как встречаются в считанном числе документов. </p>
+
+<p>Решено! Отфильтруем самые редкие слова, а так же слова маленькой длины:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Фильтрация корпуса по словам</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="python"><span class="line"><span class="n">docs_tokens_filtered</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class="line">    <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">token_frequency_dict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">5</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span>
+</span><span class="line">    <span class="k">for</span> <span class="n">tokens</span> <span class="ow">in</span> <span class="n">docs_tokens</span>
+</span><span class="line"><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Остается перевести наши разбитые на слова и отфильтрованные документы в векторный вид. Следующий блок кода делает именно это.</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Перевод текстовых документов в матрицу частот документ-слов </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+</pre></td><td class="code"><pre><code class="python"><span class="line"><span class="kn">import</span> <span class="nn">itertools</span>
+</span><span class="line"><span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">sp</span>
+</span><span class="line"><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">iterators_iterator</span><span class="p">):</span>
+</span><span class="line">    <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">iterators_iterator</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line"><span class="n">all_tokens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">flatten</span><span class="p">(</span><span class="n">paragraphs_tokens_filtered</span><span class="p">))</span>
+</span><span class="line">
+</span><span class="line"><span class="n">id_token_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">all_tokens</span><span class="p">))</span>
+</span><span class="line"><span class="n">token_id_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(((</span><span class="n">v</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">id_token_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+</span><span class="line">
+</span><span class="line"><span class="k">def</span> <span class="nf">doc2vec</span><span class="p">(</span><span class="n">doc_tokens</span><span class="p">,</span> <span class="n">token_id_dict</span><span class="p">):</span>
+</span><span class="line">    <span class="n">id_cnt_dict</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">((</span><span class="n">token_id_dict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">doc_tokens</span><span class="p">))</span>
+</span><span class="line">    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">id_cnt_dict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+</span><span class="line">
+</span><span class="line"><span class="k">def</span> <span class="nf">docs2csr_matrix</span><span class="p">(</span><span class="n">docs_tokens</span><span class="p">,</span> <span class="n">token_id_dict</span><span class="p">):</span>
+</span><span class="line">    <span class="n">docs_vecs</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc2vec</span><span class="p">(</span><span class="n">doc_tokens</span><span class="p">,</span> <span class="n">token_id_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_tokens</span> <span class="ow">in</span> <span class="n">docs_tokens</span><span class="p">]</span>
+</span><span class="line">    <span class="n">data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">((((</span><span class="n">id_cnt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">id_cnt</span> <span class="ow">in</span> <span class="n">doc_vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_vec</span> <span class="ow">in</span> <span class="n">docs_vecs</span><span class="p">))))</span>
+</span><span class="line">    <span class="n">row_ind</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">((((</span><span class="n">doc_ind</span> <span class="k">for</span> <span class="n">id_cnt</span> <span class="ow">in</span> <span class="n">doc_vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_ind</span><span class="p">,</span> <span class="n">doc_vec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">docs_vecs</span><span class="p">)))))</span>
+</span><span class="line">    <span class="n">col_ind</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">((((</span><span class="n">id_cnt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">id_cnt</span> <span class="ow">in</span> <span class="n">doc_vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_vec</span> <span class="ow">in</span> <span class="n">docs_vecs</span><span class="p">))))</span>
+</span><span class="line">    <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">row_ind</span><span class="p">,</span> <span class="n">col_ind</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line">
+</span><span class="line"><span class="n">X</span> <span class="o">=</span> <span class="n">docs2csr_matrix</span><span class="p">(</span><span class="n">docs_tokens_filtered</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Ура, мы в векторе! Получилась матрица 345 на 11467, идем дальше.</p>
+
+<h2 id="tfidf">TFIDF</h2>
+
+<p>Следующим по списку стоит TFIDF. Воспользуемся собственной реализацией.</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>TFIDF </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="python"><span class="line"><span class="k">def</span> <span class="nf">tfidf</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+</span><span class="line">    <span class="n">idf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">((</span><span class="n">X</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.</span>
+</span><span class="line">    <span class="n">idf</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">idf</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">diags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</span><span class="line">    <span class="k">return</span> <span class="n">X</span> <span class="o">*</span> <span class="n">idf</span>
+</span><span class="line">
+</span><span class="line"><span class="n">X_tfidf</span> <span class="o">=</span> <span class="n">tfidf</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="svd">Применение SVD</h2>
+<p>На этот раз свой велосипед писать не будем, воспользуемся готовой реализацией для разряженных матриц (а нас как-раз такая) из пакета <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.svds.html">scipy</a>.</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>SVD </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+</pre></td><td class="code"><pre><code class="python"><span class="line"><span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">VT</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svds</span><span class="p">(</span><span class="n">X_tfidf</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Вот и все, готово! Давайте посмотрим, какие темы нашел LSA.</p>
+
+<h1 id="section-8">Часть 3. Результаты</h1>
+
+<p>Сперва взглянем на сингулярные числа <script type="math/tex">s_t</script> соответствующую вкладу каждой тему в коллекцию</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_singular_values_histogram.png" width="768" height="576" /></p>
+
+<p>Первое собственное число стоит одинокой башней. Неужели есть какая-та настолько “выдающаяся” тема?<br />
+Как мы говорили выше, элементы вектора <script type="math/tex">v_t</script> соответствуют вкладу соответствующих слов в тему <script type="math/tex">t</script>. Посмотрим же на самые большие по модулю элементы вектора <script type="math/tex">v_0</script>. Для наглядности мы изобразили наиболее важные слова вместе с соответствующим им значением <script type="math/tex">v_0^{(w)}</script>:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Основные слова темы 0</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">+0.30*был +0.24*лорд +0.21*сказа +0.19*сир +0.15*джон +0.15*тирион +0.14*рук +0.12*корол +0.11*больш +0.10*нег +0.10*говор +0.10*нет +0.10*глаз +0.09*брат +0.09*джейм +0.09*над +0.09*под +0.09*меч +0.08*черн +0.08*сэм
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>Кажется удивительным, что все элементы одного знака, ни одного отрицательного! Получается такая тема, которой соответствуют все слова без исключения. Но если подумать, то ничего удивительного в этом нет. Вспомним базовую статистику. Если взять множество чисел, какое число будет минимизировать сумму квадратов расстояний от них? Правильно — их среднее. И здесь та же история: фактически, вектор <script type="math/tex">v_0</script> — это среднее по строкам матрицы <script type="math/tex">X_{tfidf}</script>, то есть вектор средних весов слов в нашем корпусе. По этой же причине у этой темы и столь выдаяющаесе собственной число. Исходя из этого, первая собственная тройка с точки зрения определения темы нам мало полезна, так что отбросим ее и вновь взглянем на график собственных чисел.</p>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GameOfThrones_singular_values_histogram_without_1st.png" width="768" height="576" /></p>
+
+<p>Теперь сильно выделяющихся тем нет. Далее пойдем по порядку, рассмотрим слова, образующие темы со 1-й по 7-ю (рассмотренную “среднюю” тему считаем за нулевую).</p>
+
+<h2 id="section-9">Темы по документам</h2>
+
+<p>Собственно, что мы ожидаем увидеть, рассматривая главы в качестве документов? Очевидно, что никакой конкретики здесь получить не удастся — главы большие и модель мешка слов стирает всю конкретику, перемешивая в кучу всех героев, события и прочее. Поэтому, наиболее вероятный результат — это что-то, что больше всего различает главы между собой: действующие лица, персонажи, локации. </p>
+
+<p>Для наглядности мы будем визуализировать наиболее важные слова каждой темы облаком тэгов, где размер слова пропорционален его важности. При этом, для каждой темы облако будет два: одно для слов с положительным кладом (его будем рисовать зеленым цветом) и одно для слов с отрицательным (соответственно, красным). А для некоторых еще посмотрим на соответствующие ей документы.</p>
+
+<h3 id="vs--">Тема 1. За Стеной vs Королевская Гавань</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_1.png" width="768" height="576" title="Основные слова темы 1" /></p>
+
+<p>Ого! Почти все самые важные слова темы, что с отрицательные, что положительные — это имена тех или иных персонажей. Похоже наша догадка по поводу того, что лежит в основе различия документов оказалась не далека от истины :). Попробуем проинтерпретировать как “положительную”, так и “отрицательную” часть темы.</p>
+
+<p>Как видно, “положительная” часть посвящена преимущественно Джону и Сэму (“джон” и “сэм”  — самые ярко выраженные слова темы), а так же их похождениям по обе стороны от стены: об этом говорят такие слова, как “одичал”, “крастер”, “лилл”, “черн” и прочие. Так же сюда затесалось немного “ходора” и “брана”, видимо из-за особенностей местности — и одичалые и ходор с браном большую часть времени провели за стеной, а значит и слова описывающие местность у них совпадают (например, “снег”, или “волк”) :). </p>
+
+<p>“Обратная” же тема, судя по словам, соответствует Тириону, а так же другим событиям, относящимся к королевской гавани — этим можно объяснить столь высокий вклад слова “сир”, а так же других ее обитателей: “петир”, “джейм”, “серсе”, “джофф” и т.п.</p>
+
+<p>Соответствующие этой теме главы лишь подтверждают наши выводы:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 1</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 4, Глава 6, Сэмвел
+</span><span class="line">Книга 3, Глава 20, Сэмвел
+</span><span class="line">Книга 2, Глава 24, Джон
+</span><span class="line">Книга 3, Глава 35, Сэмвел
+</span><span class="line">Книга 5, Глава 8, Джон
+</span><span class="line">Книга 1, Глава 53, Джон
+</span><span class="line">Книга 4, Глава 27, Сэмвел
+</span><span class="line">Книга 3, Глава 48, Сэмвел
+</span><span class="line">Книга 3, Глава 17, Джон
+</span><span class="line">Книга 3, Глава 77, Сэмвел
+</span><span class="line">Книга 1, Глава 27, Джон
+</span><span class="line">Книга 3, Глава 57, Джон
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 1 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 3, Глава 62, Тирион
+</span><span class="line">Книга 1, Глава 63, Тирион
+</span><span class="line">Книга 3, Глава 68, Тирион
+</span><span class="line">Книга 3, Глава 21, Тирион
+</span><span class="line">Книга 2, Глава 42, Тирион
+</span><span class="line">Книга 1, Глава 39, Тирион
+</span><span class="line">Книга 2, Глава 4, Тирион
+</span><span class="line">Книга 1, Глава 32, Тирион
+</span><span class="line">Книга 4, Глава 28, Джейме
+</span><span class="line">Книга 5, Глава 28, Тирион
+</span><span class="line">Книга 3, Глава 69, Джейме
+</span><span class="line">Книга 4, Глава 25, Серсея
+</span><span class="line">Книга 3, Глава 6, Тирион
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h3 id="vs---1">Тема 2. Бес vs Луковый рыцарь</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_2.png" width="768" height="576" title="Основные слова темы 2" /></p>
+
+<p>Здесь “позитивная” тема похоже на тему Тириона. Сюда же “затесался” Джон: по сюжету Тирион и Джон Сноу пересекались в 1-ой книге, в Винтерфелле, а так же по дороге и на самой Стене. 
+Но, если взглянуть на cоответствующие документы, то помимо 1-ой главы можно увидеть, например и 5-ую. Как объяснить 5-ую книгу серии? Дело в том, что Джон в книге не один: в 5-ой книге Тирион плыл с Джоном Когннингтоном по прозвищу “Грифф”. В пользу этой версии говорит и слово “грифф”.</p>
+
+<p>Альтернативная тема по большей части посвящена Давосу. Здесь же сильны и признаки Дейнерис Бурерожденной: “ден”, “кхал”, “дракон”, “дрог”. Если вглядется, то можно увидеть всего по немножку: “бриен”, “ходор”, “бран”, “виктарион” и прочие. Одной из причин связи линии Давоса и линии Дейнерис может быть “дракон”: Драконий Камень, где расположен замок Станниса и настоящие драконы Дени. Тем не менее, основной в этой теме — Давос, что и подтверждают основные документы ниже. </p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 2</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 1, Глава 63, Тирион
+</span><span class="line">Книга 3, Глава 62, Тирион
+</span><span class="line">Книга 1, Глава 39, Тирион
+</span><span class="line">Книга 3, Глава 68, Тирион
+</span><span class="line">Книга 1, Глава 32, Тирион
+</span><span class="line">Книга 1, Глава 22, Тирион
+</span><span class="line">Книга 5, Глава 2, Тирион
+</span><span class="line">Книга 2, Глава 4, Тирион
+</span><span class="line">Книга 5, Глава 23, Тирион
+</span><span class="line">Книга 5, Глава 28, Тирион
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 2 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 2, Глава 43, Давос
+</span><span class="line">Книга 2, Глава 59, Давос
+</span><span class="line">Книга 2, Глава 11, Давос
+</span><span class="line">Книга 3, Глава 12, Давос
+</span><span class="line">Книга 3, Глава 38, Давос
+</span><span class="line">Книга 3, Глава 56, Давос
+</span><span class="line">Книга 2, Глава 1, Пролог
+</span><span class="line">Книга 3, Глава 65, Давос
+</span><span class="line">Книга 3, Глава 27, Давос
+</span><span class="line">Книга 5, Глава 16, Давос
+</span><span class="line">Книга 5, Глава 10, Давос
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h3 id="section-10">Тема 3. Узкое море</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_3.png" width="768" height="576" title="Основные слова темы 3" /></p>
+
+<p>Здесь с положительной темой никаких сомнений нет: сплошная Дейнерис. Отрицательная тема интересней — основной здесь выступает Кейтелин Старк, но присутствуют и “давос”, “робб”, “санса”, “алейн”, “джейм”, “джон”, “станнис” и т.д. И если присутствие большинства из них вполне объяснимо, то персонажи линии Станниса (“давос”, “станнис”, “мелисандр”) объяснить сложно. Получается в некотором смысле “глобальная” тема, охватывающая Старков, Фреев, Ланнистеров, Талли, Баратеонов, Грейджоев, Болтонов — почти всех обитателей Вестероса. </p>
+
+<p>Это наталкивает на мысль, что эта тема — совего рода Узкое море — разделяет миры Вестероса и Эссоса. В пользу этого говорят и такие слова “положительной” части, как: “квентин”, “астапор”, “миэрин”. В этом смысле, забавно, что “положительная” часть так же включает слово “вестерос” — видимо на востоке от Узкого моря о вестеросе вспоминают чаще, чем в нем самом :)</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 3</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 1, Глава 65, Дейенерис
+</span><span class="line">Книга 3, Глава 25, Дейенерис
+</span><span class="line">Книга 3, Глава 73, Дейенерис
+</span><span class="line">Книга 3, Глава 44, Дейенерис
+</span><span class="line">Книга 3, Глава 59, Дейенерис
+</span><span class="line">Книга 5, Глава 3, Дейенерис
+</span><span class="line">Книга 5, Глава 17, Дейенерис
+</span><span class="line">Книга 1, Глава 47, Дейенерис
+</span><span class="line">Книга 1, Глава 24, Дейенерис
+</span><span class="line">Книга 3, Глава 10, Дейенерис
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 3 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 4, Глава 42, Алейна
+</span><span class="line">Книга 4, Глава 24, Алейна
+</span><span class="line">Книга 4, Глава 11, Санса
+</span><span class="line">Книга 2, Глава 43, Давос
+</span><span class="line">Книга 1, Глава 60, Кейтилин
+</span><span class="line">Книга 1, Глава 35, Кейтилин
+</span><span class="line">Книга 3, Глава 51, Кейтилин
+</span><span class="line">Книга 2, Глава 40, Кейтилин
+</span><span class="line">Книга 1, Глава 72, Кейтилин
+</span><span class="line">Книга 3, Глава 21, Тирион
+</span><span class="line">Документы
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h3 id="vs---">Тема 4. Контрабандист vs Ходор и Бран</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_4.png" width="768" height="576" title="Основные слова темы 4" /></p>
+
+<p>“Положительная” тема здесь — еще одна тема Давоса. Однако, здесь помимо Давоса выделяются “сэм” и “тирион”. Если с первым все объяснимо — Станнис довольно долго гостил на Стене у ночного дозора, то с Тирионом найти объяснение нелегко. Возможно, здесь роль сыграла битва при Черноводной: благо что “черноводн” среди списка слов встречается.</p>
+
+<p>“Отрицательная” тема же здесь проста — практически все в ней относится к Ходору с Браном. </p>
+
+<p>Список документов в данном случае ничего интересно не привноситю </p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 4</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 2, Глава 43, Давос
+</span><span class="line">Книга 2, Глава 59, Давос
+</span><span class="line">Книга 2, Глава 11, Давос
+</span><span class="line">Книга 3, Глава 12, Давос
+</span><span class="line">Книга 3, Глава 38, Давос
+</span><span class="line">Книга 3, Глава 56, Давос
+</span><span class="line">Книга 3, Глава 65, Давос
+</span><span class="line">Книга 3, Глава 27, Давос
+</span><span class="line">Книга 5, Глава 16, Давос
+</span><span class="line">Книга 2, Глава 1, Пролог
+</span><span class="line">Книга 5, Глава 10, Давос
+</span><span class="line">Книга 3, Глава 7, Давос
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 4 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 3, Глава 58, Бран
+</span><span class="line">Книга 1, Глава 38, Бран
+</span><span class="line">Книга 1, Глава 54, Бран
+</span><span class="line">Книга 2, Глава 17, Бран
+</span><span class="line">Книга 1, Глава 25, Бран
+</span><span class="line">Книга 5, Глава 35, Бран
+</span><span class="line">Книга 3, Глава 42, Бран
+</span><span class="line">Книга 2, Глава 70, Бран
+</span><span class="line">Книга 3, Глава 11, Бран
+</span><span class="line">Книга 5, Глава 14, Бран
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h3 id="vs----1">Тема 5. Не совсем Бран vs Джейм и Бриенна</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_5.png" width="768" height="576" title="Основные слова темы 5" /></p>
+
+<p>Здесь “положительная” тема вновь похожа на винегрет: с одной стороны, лидирует “бран”, а с другой по пятам за ним следуют “тирион” и “давос”. И хоть Бран в этой теме явно доминирует (как-никак, первые девять глав темы — главы Брана), объяснить столь большой вес у слов “тирион” и “давос” непросто. Участие Тириона можно обяснить первой книгой, где он сначала пребывает в Винтерфелле, а затем путешествует на стену и там, в том числе, обсуждает Брана с Джоном Сноу. Присутствие Давос совсем загадочно. Единственное, что приходит на ум — все та же битва при Черноводной, тем более что 59-ая глава 2-ой книги посвящена именно ей.</p>
+
+<p>“Отрицательная” тема, опять же, проста: ее документы относятся к Джейме Ланнистеру и Бриенне Тарт c легким оттенком Сансы Старк (Алейны Стоун), что понятно.</p>
+
+<p>Документы этих тем:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 5</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 3, Глава 58, Бран
+</span><span class="line">Книга 1, Глава 25, Бран
+</span><span class="line">Книга 1, Глава 54, Бран
+</span><span class="line">Книга 3, Глава 42, Бран
+</span><span class="line">Книга 1, Глава 38, Бран
+</span><span class="line">Книга 2, Глава 17, Бран
+</span><span class="line">Книга 5, Глава 35, Бран
+</span><span class="line">Книга 2, Глава 70, Бран
+</span><span class="line">Книга 5, Глава 14, Бран
+</span><span class="line">Книга 1, Глава 63, Тирион
+</span><span class="line">Книга 3, Глава 11, Бран
+</span><span class="line">Книга 2, Глава 59, Давос
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 5 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 4, Глава 5, Бриенна
+</span><span class="line">Книга 4, Глава 10, Бриенна
+</span><span class="line">Книга 4, Глава 21, Бриенна
+</span><span class="line">Книга 4, Глава 28, Джейме
+</span><span class="line">Книга 4, Глава 15, Бриенна
+</span><span class="line">Книга 4, Глава 42, Алейна
+</span><span class="line">Книга 4, Глава 43, Бриенна
+</span><span class="line">Книга 3, Глава 46, Джейме
+</span><span class="line">Книга 3, Глава 69, Джейме
+</span><span class="line">Книга 4, Глава 34, Джейме
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h3 id="vs---2">Тема 6. Сэм Тарли vs Джон Сноу</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_6.png" width="768" height="576" title="Основные слова темы 6" /></p>
+
+<p>Эта тема довольно интересна: в отличие от предыдущих здесь Сэм и Джон встречаются не вместе, а напротив, противопоставляются друг другу! Так, документы “положительной” относятся к похождениям и мыслям Сэма (и чуточку Брана), а “отрицательная” подтема полностью относится к Джону Сноу. </p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 6</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 3, Глава 20, Сэмвел
+</span><span class="line">Книга 4, Глава 27, Сэмвел
+</span><span class="line">Книга 3, Глава 48, Сэмвел
+</span><span class="line">Книга 3, Глава 35, Сэмвел
+</span><span class="line">Книга 4, Глава 6, Сэмвел
+</span><span class="line">Книга 4, Глава 36, Сэмвел
+</span><span class="line">Книга 4, Глава 46, Сэмвел
+</span><span class="line">Книга 4, Глава 16, Сэмвел
+</span><span class="line">Книга 3, Глава 58, Бран
+</span><span class="line">Книга 3, Глава 77, Сэмвел
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 6 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 3, Глава 17, Джон
+</span><span class="line">Книга 3, Глава 75, Джон
+</span><span class="line">Книга 3, Глава 57, Джон
+</span><span class="line">Книга 3, Глава 43, Джон
+</span><span class="line">Книга 6, Глава 17, Джон
+</span><span class="line">Книга 6, Глава 22, Джон
+</span><span class="line">Книга 3, Глава 9, Джон
+</span><span class="line">Книга 1, Глава 20, Джон
+</span><span class="line">Книга 3, Глава 71, Джон
+</span><span class="line">Книга 3, Глава 66, Джон
+</span><span class="line">Книга 3, Глава 28, Джон
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h3 id="vs----2">Тема 7. Петир и Санса vs Джейме и Бриенна</h3>
+
+<p><img src="/images/2015-09_TopicModelling_GameOfThrones/GoT_topic_7.png" width="768" height="576" title="Основные слова темы 7" /></p>
+
+<p>Эта тема интерпретируется так же легко, как и предыдущая. “Положительная” часть относится к главам главам Сансы Старк (Алены Стоун) и Петира Бейлиша — к этому и “лиза” и “роберт” и “нестор”.
+“Отрицательная” же — еще одна относящаяся к Джейме и Бриенне, но на этот раз без примеси Сансы, Сэма и прочих.</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 7</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 4, Глава 42, Алейна
+</span><span class="line">Книга 4, Глава 24, Алейна
+</span><span class="line">Книга 4, Глава 11, Санса
+</span><span class="line">Книга 3, Глава 70, Санса
+</span><span class="line">Книга 3, Глава 82, Санса
+</span><span class="line">Книга 1, Глава 16, Санса
+</span><span class="line">Книга 3, Глава 8, Санса
+</span><span class="line">Книга 1, Глава 52, Санса
+</span><span class="line">Книга 3, Глава 30, Санса
+</span><span class="line">Книга 1, Глава 35, Кейтилин
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>Документы темы 7 &#8220;наоборот&#8221;</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="text"><span class="line">Книга 4, Глава 21, Бриенна
+</span><span class="line">Книга 4, Глава 10, Бриенна
+</span><span class="line">Книга 3, Глава 46, Джейме
+</span><span class="line">Книга 4, Глава 5, Бриенна
+</span><span class="line">Книга 4, Глава 28, Джейме
+</span><span class="line">Книга 3, Глава 3, Джейме
+</span><span class="line">Книга 4, Глава 43, Бриенна
+</span><span class="line">Книга 4, Глава 15, Бриенна
+</span><span class="line">Книга 3, Глава 13, Джейме
+</span><span class="line">Книга 3, Глава 23, Джейме
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h1 id="section-11">Заключение</h1>
+
+<p>Мы рассмотрели теорию и практику тематического моделирования, а точнее метода LSA. Более того, мы применили его на тексте книг серии “Песнь Льда и Пламени” и получили очень даже неплохой результат! Действительно: рассмотренные нами темы естественно интерпретируются и довольно-таки неплохо описывают взаимодействия персонажей игры престолов. Еще более удивительно, что имена персонажей оказываются наиболее важными для определения тем, впрочем возможные причиные этого мы обсудили. </p>
+
+<p>Как же на практике использовать тематическое моделирование? Во-первых, наиболее очевидное применение — для интерпретиации текста. Допустим мы не читали киниги и вообще ничего не слышали про Игру Престолов, тогда применив LSA к исходным текстам книг ПЛиО мы, выделив основные темы, узнали основных персонажей, их взаимосвязь с друг-другом, а так же связанные с ними понятия (например, слова соответствующие местности). Во-вторых, получившееся представление документов в виде векторов в пространстве тем <script type="math/tex">u_{\cdot}^{(d)}</script> можно использовать для дальнейшего анализа в других алгоритмах. Например, для решения более сложных задач машинного обучения: кластеризации документов, их классификации и т.д.</p>
+
+<p>Стоит отметить, что  LSA является одним из самых базовых методов тематического моделирования. Среди его недостатков можно отметить следующие</p>
+
+<ol>
+  <li>Сложность интерпретации полюсов тем. Наличие “отрицательного” и “положительного” полюса у каждой темы контринтуитивно — пользователю приходится либо интерпретировать тему как набор свойственных и <strong>не</strong> свойственных теме слов, либо рассматривать одну тему LSA как две темы (так делали и мы).</li>
+  <li>Сложность интерпретации ненормированных значений. <script type="math/tex">u_t^{(d)}</script> и <script type="math/tex">v_t^{(w)}</script> могут принимать любое значение от <script type="math/tex">-\infty</script> до <script type="math/tex">\infty</script>, тем самым сложно понять, например, какое значение <script type="math/tex">v_t^{(w)}</script> можно назвать “большим”, а какое “маленьким”.</li>
+  <li>Сильные ограничения на формы тем. Темы, которые ищет LSA подчиняняются строгим законам: каждая тема должна описывать корпус <script type="math/tex">\mathbf{X}</script> наилучшим образов в смысле нормы Фробениуса за вычетом предыдущих, темы строго ортогональны друг другу, упорядочены по значению своего вклада, — все это значительно ограничивает ту “форму” тем, которая может быть найдена алгоритмом LSA в исходном пространстве слов. Так, например, если настоящая структура тем в документах имеет вид <a href="http://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/24616/versions/10/screenshot.jpg">схожих по размеру кластеров</a>, то LSA не удастся её выявить.</li>
+</ol>
+
+<p>В связи с этим, в последние годы методы тематического моделирования активно развиваются. Так, в 1999 году был предложен метод <a href="https://en.wikipedia.org/wiki/Probabilistic_latent_semantic_analysis">PLSA</a>, которыйй можно рассмотреть как “перевод” LSA на вероятностный язык.  2003 был предложен метод <a href="https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation">LDA</a>, далее развивающий идею <em>вероятностного тематического моделирования</em>. Короче говоря, область не стоит на месте и активно развивается, а новые методы и их развития и/или обобщения появляются регулярно.</p>
+
+<p>Если вас заинтересовал тема тем (прошу прощения за дурной каламбур) в “Песни Льда и Пламени”, то по <a href="https://gist.github.com/Obus/059805567893ba70dc22">ссылке</a> доступны по 20 наиболее важных слов для первых 150 тем. Если же хочется поиграться с темами самостоятельно, то в качестве отправных точек могу посоветовать следующее</p>
+
+<ol>
+  <li><a href="https://github.com/Obus/Topic_Modelling_Game_of_Thrones/blob/master/Song%20of%20Ice%20and%20Fire%20Topic%20Modelling.ipynb">IPython Notebook</a> с кодом для этой статьи и полученными результатами.</li>
+  <li>Python пакет <a href="https://radimrehurek.com/gensim/">gensim</a>, содержащий как вспомогательный инструменты для создания корпуса, реализацию LSA, так и реализации гораздо более сложных, но и интересных методов тематического моделирования</li>
+  <li><a href="http://www.machinelearning.ru/wiki/index.php?title=%D0%A2%D0%B5%D0%BC%D0%B0%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5_%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5">Статья</a> на machinelearning.ru, там же <a href="http://www.machinelearning.ru/wiki/images/2/22/Voron-2013-ptm.pdf">материалы</a> <a href="https://www.google.ru/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=4&amp;cad=rja&amp;uact=8&amp;ved=0CDgQFjADahUKEwjgoJvAuqbIAhWGCiwKHaGtAis&amp;url=http%3A%2F%2Fwww.machinelearning.ru%2Fwiki%2Findex.php%3Ftitle%3D%25D0%2592%25D0%25B5%25D1%2580%25D0%25BE%25D1%258F%25D1%2582%25D0%25BD%25D0%25BE%25D1%2581%25D1%2582%25D0%25BD%25D1%258B%25D0%25B5_%25D1%2582%25D0%25B5%25D0%25BC%25D0%25B0%25D1%2582%25D0%25B8%25D1%2587%25D0%25B5%25D1%2581%25D0%25BA%25D0%25B8%25D0%25B5_%25D0%25BC%25D0%25BE%25D0%25B4%25D0%25B5%25D0%25BB%25D0%25B8_(%25D0%25BA%25D1%2583%25D1%2580%25D1%2581_%25D0%25BB%25D0%25B5%25D0%25BA%25D1%2586%25D0%25B8%25D0%25B9%252C_%25D0%259A.%25D0%2592.%25D0%2592%25D0%25BE%25D1%2580%25D0%25BE%25D0%25BD%25D1%2586%25D0%25BE%25D0%25B2)&amp;usg=AFQjCNHXh1sFBsjj9wVs3W7S5qn7gmoDmA&amp;sig2=G-MlJOF4N2orS105uZcisQ&amp;bvm=bv.104317490,d.bGg">курса по вероятностным тематическим моделям</a>.</li>
+</ol>
+
+<p>Надеюсь, вам было интересно :) В последующих статьях, быть может, мы продолжим тему автоматического анализа текстов Игры Престолов и постараемся вытащить из текстов книг ПЛиО что-нибудь менее тривиальное, чем факт знакомства Джона Сноу и Сэма Тарли. Если вы не прочь прочитать продолжение — смело лайкайте эту статью во всех возможных соцсетях :)</p>
+
+<p>До встречи!</p>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Опубликовал <span class="fn">Alexander Senov</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-10-28T23:59:59+03:00'><span class='date'>28/10/2015</span> <span class='time'>23:59</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/vizualizatsiia/'>Визуализация</a>, <a class='category' href='/blog/categories/mashinnoie-obuchieniie/'>Машинное обучение</a>, <a class='category' href='/blog/categories/obrabotka-tieksta/'>Обработка текста</a>, <a class='category' href='/blog/categories/tiematichieskoie-modielirovaniie/'>Тематическое моделирование</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/" data-via="" data-counturl="http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+  
+    <div id="vk_like"></div>
+    <script type="text/javascript">
+    window.onload = function () {
+        VK.init({apiId: 4631132, onlyWidgets: true});
+        VK.Widgets.Like("vk_like", {type: "mini"});
+    }
+    </script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/09/02/mnoghoobraziie-vizualizatsii/" title="Previous Post: Многообразие визуализаций">&laquo; Многообразие визуализаций</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Комментарии</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Недавние Посты</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/">Тематическое моделирование Игры Престолов</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/02/mnoghoobraziie-vizualizatsii/">Многообразие визуализаций</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/22/obnaruzhieniie-dorozhnykh-znakov-pri-pomoshchi-deep-learning/">Обнаружение дорожных знаков при помощи Deep Learning</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Обнаружение дорожных знаков с помощью Deep Learning</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Краткое введение в D3.js</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+<section>
+  <h1>Категории</h1>
+    <ul id="category-list"><li><a href='/blog/categories/deep-learning'>deep learning (2)</a></li><li><a href='/blog/categories/vizualizatsiia'>Визуализация (4)</a></li><li><a href='/blog/categories/komp-iutiernoie-zrieniie'>Компьютерное зрение (2)</a></li><li><a href='/blog/categories/mashinnoie-obuchieniie'>Машинное обучение (5)</a></li><li><a href='/blog/categories/obrabotka-tieksta'>Обработка текста (1)</a></li><li><a href='/blog/categories/optimizatsiia'>Оптимизация (1)</a></li><li><a href='/blog/categories/proghrammirovaniie'>Программирование (1)</a></li><li><a href='/blog/categories/statistika'>Статистика (1)</a></li><li><a href='/blog/categories/tiematichieskoie-modielirovaniie'>Тематическое моделирование (1)</a></li></ul>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Команда datadeep.ru -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'datadeep';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/';
+        var disqus_url = 'http://datadeep.ru/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+  <script type="text/javascript" src="//vk.com/js/api/openapi.js?75"></script>
+
+
+
+
+</body>
+</html>
+
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+

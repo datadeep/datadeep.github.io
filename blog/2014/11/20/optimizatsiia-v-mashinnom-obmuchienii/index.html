@@ -98,12 +98,14 @@
 
 
 <div class="entry-content"><p><img src="/images/optim_surface.png" width="768" height="576" title="Surface" />
-<script type="math/tex">\newcommand{loss}{\ell}
+<script type="math/tex">
+\newcommand{loss}{\ell}
 \newcommand{risk}{F}
 \newcommand{hyp}{h}
-\newcommand{eps}{\varepsilon}</script></p>
+\newcommand{eps}{\varepsilon}
+</script></p>
 
-<p>Привет, читатель! Обсуждая науку о данных, нельзя не упомянуть машинное обучение, а говоря о машинном обучении, никак невозможно пройти мимо такой темы как <em>оптимизация</em>. Что же такое оптимизация и какая она бывает? Как оптимизация связана с машинным обучением? Как быть быстрее, оптимальнее, точнее?</p>
+<p>Привет, читатель! Обсуждая науку о данных, нельзя не упомянуть машинное обучение, а говоря о машинном обучении, никак невозможно пройти мимо такой темы как <em>оптимизация</em>. Что же такое оптимизация и какая она бывает? Как оптимизация связана с машинным обучением? Как быть быстрее, оптимальнее, точнее? </p>
 
 <p>Если эти вопросы вызывают интерес — заходите.</p>
 
@@ -115,13 +117,15 @@
 
 <p>Разобравшись с оптимизацией “на пальцах”, определим ее формально, а формально задача математической оптимизации записывается следующим образом:</p>
 
-<script type="math/tex; mode=display">\risk(\theta) \longrightarrow \min\limits_{\theta\in\mathcal{X}}.</script>
+<script type="math/tex; mode=display">
+\risk(\theta) \longrightarrow \min\limits_{\theta\in\mathcal{X}}.
+</script>
 
 <p>Так вот, просто и незатейливо. Но постойте, кто эти <script type="math/tex">\risk</script>, <script type="math/tex">\theta</script>, <script type="math/tex">\mathcal{X}</script> и какое отношение они имеют к машинному обучению?</p>
 
 <p>Оказывается, большинство задач машинного обучения формулируются именно таким образом: в виде минимизации некоего функционала <script type="math/tex">\risk</script> по некоторому параметру <script type="math/tex">\theta</script>. Например, в случае задачи классификации или регрессии мы стараемся предсказывать одну переменную (<script type="math/tex">y</script>) на основе другой (<script type="math/tex">x</script>) с помощью набора функций–“оракулов” <script type="math/tex">\{\hyp_\theta\}_{\theta\in\mathcal{X}}</script>, выбирая наилучшую из них на основе <em>обучающей выборки</em> <script type="math/tex">\{x_i, y_i\}_{1}^N</script> — в таком случае мы хотим минимизировать ошибку предсказания на имеющейся выборке. Ошибку предсказания чаще всего записывают как</p>
 
-<script type="math/tex; mode=display">\risk(\theta) = \sum_{i=1}^n \loss(\hyp_{\theta}(x_i), y_i),</script>
+<script type="math/tex; mode=display"> \risk(\theta) = \sum_{i=1}^n \loss(\hyp_{\theta}(x_i), y_i),</script>
 
 <p>где <script type="math/tex">\loss(\hyp_{\theta}(x_i), y_i)</script> — мера отличия предсказания <script type="math/tex">\hyp_{\theta}(x_i)</script> от истинного значения <script type="math/tex">y_i</script>. Чтобы не витать в облаках, рассмотрим конкретный вид <script type="math/tex">\risk(\theta)</script> для двух распространенных методов машинного обучения: метода <script type="math/tex">K</script>-средних и линейной регрессии с квадратичной функцией потерь.</p>
 
@@ -129,7 +133,9 @@
 
 <p>Этот метод решает задачу кластеризации — разбиения множества точек <script type="math/tex">\{x_i\}_1^N</script> на <script type="math/tex">K</script> (<script type="math/tex">\leq N</script>) непересекающихся множеств-кластеров.  Результат кластеризации методом $K$-средних — это, во-первых, разбиение множества ${1,\ldots,N}$ на <script type="math/tex">K</script> кластеров: <script type="math/tex">\{\mathcal{C}_k\}_1^K</script> и, во-вторых, центр каждого из этих кластеров: <script type="math/tex">\{\mu_k\}_1^K</script>. Функция <script type="math/tex">\risk(\theta)</script> при фиксированном $K$ для метода $K$-средних записывается следующим образом</p>
 
-<script type="math/tex; mode=display">\risk\left(\theta = \left(\{\mathcal{C}_k\}_1^K, \{\mu_k\}_1^K\right)\right) = \sum_{k=1}^K \sum_{i\in \mathcal{C}_k} (x_i - \mu_k)^2 \to \min\limits_{\theta},</script>
+<script type="math/tex; mode=display">
+\risk\left(\theta = \left(\{\mathcal{C}_k\}_1^K, \{\mu_k\}_1^K\right)\right) = \sum_{k=1}^K \sum_{i\in \mathcal{C}_k} (x_i - \mu_k)^2 \to \min\limits_{\theta},
+</script>
 
 <p>— то есть метод <script type="math/tex">K</script>-средних ищет такое разбиение множества <script type="math/tex">\{x_i\}_1^N</script> на кластеры, чтобы сумма расстояний от каждой точки до центра кластера, которому она принадлежит, была минимальна.</p>
 
@@ -137,11 +143,13 @@
 
 <p>Этот метод решает задачу регрессии — предсказания выходов <script type="math/tex">y_i\in\mathbb{R}</script> по входам <script type="math/tex">x_i=(x_i^{(1)},\ldots,x_i^{(p)})^T\in\mathbb{R}^p</script> на основе обучающей выборки <script type="math/tex">\{ x_i, y_i \}_1^N</script>. Метод линейной регрессии “предполагает”, что выход <script type="math/tex">y_i</script> может быть представлен в виде линейной функции от входов <script type="math/tex">x_i^{(1)},\ldots,x_i^{(p)}</script> и от параметров <script type="math/tex">\theta^{(1)},\ldots,\theta^{(p)}</script>: <script type="math/tex">y_i = \sum_{j=1}^p \theta^{(j)} x_i^{(j)}</script>. <script type="math/tex">\risk(\theta)</script> записывается следующим образом:</p>
 
-<script type="math/tex; mode=display">\risk(\theta) = \sum_{i=1}^N (x_i^T\theta - y_i)^2 \to \min\limits_{\theta},</script>
+<script type="math/tex; mode=display">
+\risk(\theta) = \sum_{i=1}^N (x_i^T\theta - y_i)^2 \to \min\limits_{\theta},
+</script>
 
 <p>— здесь минимизируется среднеквадратичное отклонение “предсказаний” <script type="math/tex">x_i^T\theta</script> от истинных значений <script type="math/tex">y_i</script>.</p>
 
-<p>Таким образом, и метод <script type="math/tex">K</script>-средних и линейная регрессия минимизируют конкретные функции <script type="math/tex">F(\theta)</script> (вся хитрость методов, в том <strong>как</strong> они это делают), решая частные задачи оптимизации. Приложив определенные усилия, функция <script type="math/tex">\risk(\theta)</script> может быть выписана для сколь угодно сложной модели, например, для сверточной нейронной сети. Но мы этого делать не будем: и так хорошо понятно, что в машинном обучении оптимизация играет очень важную роль.</p>
+<p>Таким образом, и метод <script type="math/tex">K</script>-средних и линейная регрессия минимизируют конкретные функции <script type="math/tex">F(\theta)</script> (вся хитрость методов, в том <strong>как</strong> они это делают), решая частные задачи оптимизации. Приложив определенные усилия, функция <script type="math/tex">\risk(\theta)</script> может быть выписана для сколь угодно сложной модели, например, для сверточной нейронной сети. Но мы этого делать не будем: и так хорошо понятно, что в машинном обучении оптимизация играет очень важную роль. </p>
 
 <h2 id="section-2">Математическая оптимизация</h2>
 
@@ -149,22 +157,26 @@
 
 <p>Математическая оптимизация зародилась в XVIII–XIX века и окончательно оформилась в XX веке. За этот срок у нее появилось множество видов, подвидов, методов и приложений. Как мы и упомянали выше, общая задача оптимизации ставится следующим образом</p>
 
-<script type="math/tex; mode=display">\risk(\theta) \longrightarrow \min\limits_{\theta\in\mathcal{X}},</script>
+<script type="math/tex; mode=display">
+\risk(\theta) \longrightarrow \min\limits_{\theta\in\mathcal{X}},
+</script>
 
 <p>но от настолько общей постановки мало толку — совершенно непонятно как ее решать: не имея информации о природе <script type="math/tex">\risk</script> и <script type="math/tex">\mathcal{X}</script>, мы безоружны, можем только вслепую тыкать “пальцем в небо” (вернее, в <script type="math/tex">\mathcal{X}</script>) в надежде попасть в точку минимума.
 Собственно, чем не вариант, есть даже схожий по идее метод с вполне себе научным названием: метод <em>равномерного поиска</em> (aka перебора). Суть его, как вы уже догадались, состоит в том, чтобы наложить <script type="math/tex">\varepsilon</script>-сетку на множество <script type="math/tex">\mathcal{X}</script> и измерить функцию <script type="math/tex">\risk</script> в каждом узле сетки. Так найдется узел <script type="math/tex">\hat\theta</script> с наименьшим значением <script type="math/tex">\risk</script>, и … пользы от этого знания будет чуть больше чем никакой.
 Без дополнительных ограничений на <script type="math/tex">\risk</script> и/или <script type="math/tex">\mathcal{X}</script> наш <script type="math/tex">\hat\theta</script> ничего не говорит ни о наимаеньшем значении <script type="math/tex">\risk^* = \min\limits_{\theta\in\mathcal{X}} \risk(\theta)</script> не о соответствующем аргументе <script type="math/tex">\theta^* = \arg\min\limits_{\theta\in\mathcal{X}} \risk(\theta)</script>. Действительно, <script type="math/tex">\risk</script> может меняться сколь угодно быстро, принимая между узлами сетки какие угодно значения, а то и вовсе быть разрывной. То есть знания о функции в узлах не говорит ничего о ней вне этих узлов. Так вот, старались-старались, считали функцию в каждом узле, а толку — ноль.</p>
 
 <p>Но не стоит отчаиваться, надо это дело исправить. В чем наша проблема?
-Проблема наша в излишнней свободе функции $\risk$, точнее в неограниченной скорости ее изменения.</p>
+Проблема наша в излишнней свободе функции $\risk$, точнее в неограниченной скорости ее изменения. </p>
 
 <p>Так давайте ее ограничим! Например, вот так:</p>
 
-<script type="math/tex; mode=display">|\risk(\theta_1) - \risk(\theta_2)| \leq L |\theta_1 - \theta_2|</script>
+<script type="math/tex; mode=display">
+|\risk(\theta_1) - \risk(\theta_2)| \leq L |\theta_1 - \theta_2|
+</script>
 
 <p>т.е. мы запретили <script type="math/tex">\risk</script> менятся как угодно быстро, ограничив ее изменение линейно изменением ее аргумента (это условие на <script type="math/tex">\risk</script>, называется <em>условием Липшица</em>, очень, кстати, полезное и распространенное свойство в оптимизации). Теперь наша оценка <script type="math/tex">\hat\theta</script> кое-чего стоит:</p>
 
-<script type="math/tex; mode=display">|\risk(\hat\theta) - \risk^*| \leq \varepsilon L \sqrt{p},</script>
+<script type="math/tex; mode=display">|\risk(\hat\theta) - \risk^*| \leq \varepsilon L \sqrt{p}, </script>
 
 <p>где <script type="math/tex">p</script> — размерность <script type="math/tex">\mathcal{X}</script>. Местоположении <script type="math/tex">\theta^*</script>, однако, до сих пор остается загадкой.</p>
 
@@ -181,25 +193,32 @@
 
 <p>Идея градиентных методов в том, что в каждой точке <script type="math/tex">\theta_0</script> мы можем измерить градиент функции <script type="math/tex">\nabla \risk(\theta_0)</script>, который подскажет нам, как изменяется функция в окрестности <script type="math/tex">\theta</script>. Попробуем объяснить, откуда растут ноги у этой идеи: зафиксируем <script type="math/tex">\theta_0</script>, <script type="math/tex">\delta</script> и расмотрим разложение функции <script type="math/tex">\risk</script> в ряд Тейлора в точке <script type="math/tex">\theta_0 + \delta</script>:</p>
 
-<script type="math/tex; mode=display">\risk(\theta_0 + \delta) = \risk(\theta_0) +
+<script type="math/tex; mode=display">
+\risk(\theta_0 + \delta) = \risk(\theta_0) +
 \nabla \risk(\theta)\delta +
 \nabla^2 \risk(\theta_0) \frac{\delta^2}{2} +
 \ldots +
 \nabla^n \risk(\theta_0) \frac{\delta^n}{n!} +
-\ldots</script>
+\ldots
+</script>
 
 <p><script type="math/tex">\delta</script> предполагается достаточно малым, поэтому <script type="math/tex">\delta^n</script> убывает очень быстро и обычно рассматривают только первую компоненту:</p>
 
-<script type="math/tex; mode=display">\risk(\theta_0 + \delta) \simeq \risk(\theta_0) +
-\nabla \risk(\theta)\delta.</script>
+<script type="math/tex; mode=display">
+\risk(\theta_0 + \delta) \simeq \risk(\theta_0) +
+\nabla \risk(\theta)\delta.
+</script>
 
 <p>Таким образом, в окрестности точки <script type="math/tex">\theta_0</script> мы приблизили <script type="math/tex">\risk</script> линейной функцией. Градиентные методы эксплуатируют это приближение, полагаясь на то, что минимизация <script type="math/tex">\risk</script> эквивалентна минимизации ее линейного приближения в небольшой окрестности точки <script type="math/tex">\theta_0</script>. А что такое “небольшая окрестность”? Ограничим ее шаром с радиусом <script type="math/tex">\alpha</script> <script type="math/tex">(\mid\delta\mid \leq \alpha)</script>, тогда в этой окрестности минимум будет достигаться при</p>
 
-<script type="math/tex; mode=display">\delta^* = \arg\min\limits_{|\delta|\leq \alpha}\left[ \risk(\theta_0) + \nabla \risk(\theta)\delta \right] = - \alpha\frac{\nabla \risk(\theta)}{|\nabla \risk(\theta)|}.</script>
+<script type="math/tex; mode=display">
+\delta^* = \arg\min\limits_{|\delta|\leq \alpha}\left[ \risk(\theta_0) + \nabla \risk(\theta)\delta \right] = - \alpha\frac{\nabla \risk(\theta)}{|\nabla \risk(\theta)|}.
+</script>
 
 <p>Фактически, мы сделали шажок длиной <script type="math/tex">\alpha</script> в направлении <em>противоположном</em> направлению градиента <script type="math/tex">\nabla \risk(\theta)</script>. Это вполне логично, ведь направление градиента — это направление наибольшего роста функции, а противоположное ему — направление наискорейшего ее уменьшения. В этом и заключается основная идея градиентных методов: шаг за шагом, спускаться против направления градиента к минимуму. С этими знаниями можем уже сформулировать простенький алгоритм оптимизации</p>
 
 <script type="math/tex; mode=display">% <![CDATA[
+
 \text{Simple_Gradient_Descent}(\risk, \, \theta_0, \, \alpha):
 \\
 \begin{eqnarray*}
@@ -212,7 +231,8 @@
 & \qquad \qquad & \qquad \theta_k \leftarrow \theta_{k-1} - \alpha\frac{\nabla \risk(\theta_{k-1})}{|\nabla \risk(\theta_{k-1})|}
 \\
 & \qquad \qquad & \textbf{return}\; \theta_k
-\end{eqnarray*} %]]></script>
+\end{eqnarray*}
+ %]]></script>
 
 <p>Действительно, ничего сложного: один за другим делаем шажочки длиной <script type="math/tex">\alpha</script> против направления градиента. Условие остановки <script type="math/tex">not\;converged</script> мы пока конкретизировать не будем, это может быть условие на максимальное количество итераций (<script type="math/tex">% <![CDATA[
 k < k_{max} %]]></script>), изменение значения функции <script type="math/tex">% <![CDATA[
@@ -223,6 +243,7 @@ f(\theta_{k-1}) - f(\theta_{k}) < \eps %]]></script>, параметра <script
 <p>К счастью, мы можем избавится от этих недостатков, немного изменив наш алгоритм</p>
 
 <script type="math/tex; mode=display">% <![CDATA[
+
 \text{Gradient_Descent}(\risk, \, \theta_0, \, \alpha):
 \\
 \begin{eqnarray*}
@@ -235,11 +256,14 @@ f(\theta_{k-1}) - f(\theta_{k}) < \eps %]]></script>, параметра <script
 & \qquad \qquad & \qquad \theta_k \leftarrow \theta_{k-1} - \alpha_k\nabla \risk(\theta_{k-1})
 \\
 & \qquad \qquad & \textbf{return}\; \theta_k
-\end{eqnarray*} %]]></script>
+\end{eqnarray*}
+ %]]></script>
 
 <p>Этот “алгоритм” есть ни что иное, как метод <em>градиентного спуска</em> (<em>gradient descent</em>). Известно, что при некоторых условиях на <script type="math/tex">\risk</script> и <script type="math/tex">\alpha_k</script> (например, <script type="math/tex">\risk</script> выпукла, <script type="math/tex">\nabla \risk</script> удовлетворяет условию Липшица, а <script type="math/tex">\alpha_k = \alpha</script> ), значение <script type="math/tex">\risk</script> в оценках метода градиентного спуска <script type="math/tex">\theta_k</script> стремится к оптимальному</p>
 
-<script type="math/tex; mode=display">|\risk(\theta_k) - \risk^*| \xrightarrow{k\to\infty} 0</script>
+<script type="math/tex; mode=display">
+|\risk(\theta_k) - \risk^*| \xrightarrow{k\to\infty} 0
+</script>
 
 <p>— это не может не радовать.</p>
 
@@ -249,11 +273,15 @@ f(\theta_{k-1}) - f(\theta_{k}) < \eps %]]></script>, параметра <script
 
 <p>Выше мы уже упомянали задачу линейной регрессии (с квадратичной функцией ошибки). Напомним ее целевую функцию <script type="math/tex">\risk</script>:</p>
 
-<script type="math/tex; mode=display">\risk(\theta) = \sum_{i=1}^N (x_i^T\theta - y_i)^2 \to \min\limits_{\theta},</script>
+<script type="math/tex; mode=display">
+\risk(\theta) = \sum_{i=1}^N (x_i^T\theta - y_i)^2 \to \min\limits_{\theta},
+</script>
 
 <p>В матричном виде она записывается как</p>
 
-<script type="math/tex; mode=display">\risk(\theta) = ||X\theta - y||_2^2 = (X\theta - y)^T (X\theta - y) \to \min\limits_{\theta},</script>
+<script type="math/tex; mode=display">
+\risk(\theta) = ||X\theta - y||_2^2 = (X\theta - y)^T (X\theta - y) \to \min\limits_{\theta},
+</script>
 
 <p>где <script type="math/tex">X\in\mathbb{R}^{N\times p}</script> — матрица, чьи строки — <script type="math/tex">x_i</script>, а <script type="math/tex">y = (y_1,\ldots,y_N)</script>.
 Существует аналитическое решение этой задачи: <script type="math/tex">\hat\theta = (X^T X)^{-1} X^T y</script> (оценка <a href="http://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%82%D0%BE%D0%B4_%D0%BD%D0%B0%D0%B8%D0%BC%D0%B5%D0%BD%D1%8C%D1%88%D0%B8%D1%85_%D0%BA%D0%B2%D0%B0%D0%B4%D1%80%D0%B0%D1%82%D0%BE%D0%B2">методом наименьших квадратов</a>). Но операция обращения матрицы довольно <a href="http://en.wikipedia.org/wiki/Computational_complexity_of_mathematical_operations#Matrix_algebra">дорогая</a>, в особенности в задачах, где размерность <script type="math/tex">x</script> огромна и матричные операции просто не могут быть выполнены в памяти.
@@ -262,11 +290,13 @@ f(\theta_{k-1}) - f(\theta_{k}) < \eps %]]></script>, параметра <script
 <p>В первую очередь нам нужны данные: <script type="math/tex">\{x_i, y_i\}_1^N</script>, для простоты возьмем модельные (<script type="math/tex">N=1000</script>):</p>
 
 <script type="math/tex; mode=display">% <![CDATA[
+
 \begin{eqnarray*}
 &x^{(1)}_i & \sim \mathcal{N}(0, 1), \quad &i=1,\ldots, 1000
 \\
 &y_i &= 2 x^{(1)}_i - 0.5 + \varepsilon_i, \qquad &\varepsilon_i \sim \mathcal{N}(0, 1).
-\end{eqnarray*} %]]></script>
+\end{eqnarray*}
+ %]]></script>
 
 <p>То есть все <script type="math/tex">x_i^{(1)}</script> распределены по стандартному нормальному закону, а <script type="math/tex">y_i</script> — линейная функция от <script type="math/tex">x_i^{(1)}</script> с аддитивной помехой (так же имеющей стандртное нормальное распределение). Ниже изображены эти данные в плоскости <script type="math/tex">(x^{(1)}, y)</script>.
 <img src="/images/data.png" width="768" height="576" title="Data" /></p>
@@ -275,10 +305,11 @@ f(\theta_{k-1}) - f(\theta_{k}) < \eps %]]></script>, параметра <script
 
 <script type="math/tex; mode=display">y = X\theta^* + \varepsilon.</script>
 
-<p>где</p>
+<p>где </p>
 
 <script type="math/tex; mode=display">% <![CDATA[
-y = (y_1,\ldots,y_n)^T,
+
+	y = (y_1,\ldots,y_n)^T,
 \\
 	X = \begin{pmatrix}
 		x_1^{(1)} & x_1^{(2)} \\ 
@@ -289,11 +320,14 @@ y = (y_1,\ldots,y_n)^T,
 \\
 	\varepsilon =(\varepsilon_1,\ldots,\varepsilon_n)^T,
 \\
- 	\text{a }\, \theta^*=(2, -\frac{1}{2}). %]]></script>
+ 	\text{a }\, \theta^*=(2, -\frac{1}{2}).
+ %]]></script>
 
 <p>Итак, мы определили <script type="math/tex">X</script> и <script type="math/tex">y</script> (и неизвестный нам по легенде <script type="math/tex">\theta^*</script>). Для того, чтобы воспользоваться методом градиентного спуска остается найти производную <script type="math/tex">\nabla \risk</script>, что довольно просто:</p>
 
-<script type="math/tex; mode=display">\nabla \risk(\theta) =\nabla_\theta \left[ (X\theta - y)^T (X\theta - y)\right] = X^T (X\theta - y) .</script>
+<script type="math/tex; mode=display">
+\nabla \risk(\theta) =\nabla_\theta \left[ (X\theta - y)^T (X\theta - y)\right] = X^T (X\theta - y) .
+</script>
 
 <p>Теперь все готово. Остается применить метод градиентного спуска к задаче линейной регрессии со сгенерированными нами данными.
 Зададим <script type="math/tex">\alpha=0.0001</script>. Ниже иллюстрируется работа нашего алгоритма: как изменялась линия регрессии, построенная по оценкам <script type="math/tex">(\theta_k^{(1)},\theta_k^{(2)})</script>, на каждой итерации.</p>
@@ -390,6 +424,10 @@ y = (y_1,\ldots,y_n)^T,
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/10/28/tiematichieskoie-modielirovaniie-ighry-priestolov/">Тематическое моделирование Игры Престолов</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/09/02/mnoghoobraziie-vizualizatsii/">Многообразие визуализаций</a>
       </li>
     
@@ -398,15 +436,11 @@ y = (y_1,\ldots,y_n)^T,
       </li>
     
       <li class="post">
+        <a href="/blog/2015/08/21/obnaruzhieniie-dorozhnykh-znakov-s-pomoshch'iu-deep-learning/">Обнаружение дорожных знаков с помощью Deep Learning</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2014/12/04/kratkoie-vviedieniie-v-d3-dot-js/">Краткое введение в D3.js</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/11/20/optimizatsiia-v-mashinnom-obmuchienii/">Оптимизация в машинном обучении</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/11/07/chto-takoie-data-science/">Что такое Data Science?</a>
       </li>
     
   </ul>
@@ -417,7 +451,7 @@ y = (y_1,\ldots,y_n)^T,
 
 <section>
   <h1>Категории</h1>
-    <ul id="category-list"><li><a href='/blog/categories/deep-learning'>deep learning (1)</a></li><li><a href='/blog/categories/vizualizatsiia'>Визуализация (3)</a></li><li><a href='/blog/categories/komp-iutiernoie-zrieniie'>Компьютерное зрение (1)</a></li><li><a href='/blog/categories/mashinnoie-obuchieniie'>Машинное обучение (3)</a></li><li><a href='/blog/categories/optimizatsiia'>Оптимизация (1)</a></li><li><a href='/blog/categories/proghrammirovaniie'>Программирование (1)</a></li><li><a href='/blog/categories/statistika'>Статистика (1)</a></li></ul>
+    <ul id="category-list"><li><a href='/blog/categories/deep-learning'>deep learning (2)</a></li><li><a href='/blog/categories/vizualizatsiia'>Визуализация (4)</a></li><li><a href='/blog/categories/komp-iutiernoie-zrieniie'>Компьютерное зрение (2)</a></li><li><a href='/blog/categories/mashinnoie-obuchieniie'>Машинное обучение (5)</a></li><li><a href='/blog/categories/obrabotka-tieksta'>Обработка текста (1)</a></li><li><a href='/blog/categories/optimizatsiia'>Оптимизация (1)</a></li><li><a href='/blog/categories/proghrammirovaniie'>Программирование (1)</a></li><li><a href='/blog/categories/statistika'>Статистика (1)</a></li><li><a href='/blog/categories/tiematichieskoie-modielirovaniie'>Тематическое моделирование (1)</a></li></ul>
 </section>
 
   
